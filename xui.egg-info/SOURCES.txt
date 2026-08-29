@@ -1,0 +1,12 @@
+pyproject.toml
+xui/__init__.py
+xui/context.py
+xui/csrf.py
+xui/mount.py
+xui/nav.py
+xui/packages.py
+xui.egg-info/PKG-INFO
+xui.egg-info/SOURCES.txt
+xui.egg-info/dependency_links.txt
+xui.egg-info/requires.txt
+xui.egg-info/top_level.txt

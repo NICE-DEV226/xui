@@ -1,0 +1,26 @@
+[project]
+name = "xui"
+version = "0.1.0"
+description = "SDK de pages server-rendues pour plugins xcore — jamais un prerequis, jamais une couche kernel."
+requires-python = ">=3.12"
+dependencies = [
+    "xcoreruntime>=2.5.2",
+    "fastapi>=0.135",
+    "httpx>=0.27",
+]
+
+# microframe (le vrai moteur Jinja2, https://github.com/traoreera/microframe)
+# n'est PAS ce paquet : "microframe" sur PyPI est un projet numpy sans rapport
+# (collision de nom). Installer le vrai en editable depuis le sibling repo :
+#   uv pip install -e ../microframe
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["xui*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

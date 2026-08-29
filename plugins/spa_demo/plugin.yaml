@@ -1,0 +1,17 @@
+name: spa_demo
+version: "1.0.0"
+execution_mode: trusted
+entry_point: src/main.py
+permissions:
+  - resource: "*"
+    actions: ["execute"]
+    effect: allow
+
+# docs/spec-v1.md §2.1/§14 — contrat de compatibilité frontend externe :
+# ce bloc est la SEULE chose qu'un plugin React/Vue/Svelte a besoin de
+# déclarer. dist_dir pointe un build déjà compilé (Vite/webpack/etc) ;
+# dev_server (optionnel, non utilisé ici) proxifierait vers un serveur de
+# dev vivant à la place.
+ui:
+  mode: spa
+  dist_dir: ui/dist

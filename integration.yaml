@@ -1,0 +1,21 @@
+app:
+  name: "xui-demo"
+  env: "development"
+  secret_key: "debug-key-change-me"
+  plugin_prefix: /plugins
+
+plugins:
+  directory: "./plugins"
+  strict_trusted: false
+  interval: 10
+
+services:
+  extensions:
+    template_engine:
+      module: microframe.engine.integration.xcore:TemplateEngineExtension
+      config:
+        directory: templates
+        namespaces:
+          crm: plugins/crm_app/templates
+        enable_minify: false
+        debug: true

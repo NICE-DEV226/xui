@@ -1,0 +1,11 @@
+/* Propre à crm_app — servi sous /plugins/crm_app/static/css/app.css,
+   jamais mélangé avec les assets d'un autre plugin. */
+.crm-pill {
+  display: inline-block;
+  background: #eaf7ea;
+  color: #2a6b2a;
+  border-radius: 999px;
+  padding: .1rem .7rem;
+  font-size: .8rem;
+  margin-bottom: .75rem;
+}

@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: xui
+Version: 0.1.0
+Summary: SDK de pages server-rendues pour plugins xcore — jamais un prerequis, jamais une couche kernel.
+Requires-Python: >=3.12
+Requires-Dist: xcoreruntime>=2.5.2
+Requires-Dist: fastapi>=0.135

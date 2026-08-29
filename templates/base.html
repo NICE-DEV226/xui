@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}XUI Demo{% endblock %}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 640px; }
+    nav { display: flex; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: .75rem; border-bottom: 1px solid #ddd; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #eee; }
+    form { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .5rem; max-width: 320px; }
+    .badge { background: #eef; color: #225; border-radius: 999px; padding: .1rem .6rem; font-size: .8rem; }
+    .field-error { color: #b00020; font-size: .85rem; margin: -.25rem 0 0; }
+  </style>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <nav>
+    {% for node in nav %}
+      <a href="{{ node.path }}">{{ node.label }}</a>
+    {% endfor %}
+    <span style="margin-left:auto">
+      {% if user %}
+        {{ user.sub }} <component.badge>{{ user.roles|join(", ") }}</component.badge>
+        <form method="post" action="/plugins/demo_auth/logout" style="display:inline">
+          <button type="submit">Déconnexion</button>
+        </form>
+      {% else %}
+        <a href="/plugins/demo_auth/login">Connexion</a>
+      {% endif %}
+    </span>
+  </nav>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

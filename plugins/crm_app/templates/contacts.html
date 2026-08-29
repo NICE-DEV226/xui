@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Contacts{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ static('css/app.css') }}">
+<script src="{{ static('js/app.js') }}" defer></script>
+{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<component.crm_pill>{{ contacts|length }} contact(s)</component.crm_pill>
+<table>
+  <thead>
+    <tr>
+      <th>Nom</th>
+      <th>Email</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in contacts %}
+    <tr>
+      <td>{{ c.name }}</td>
+      <td>{{ c.email }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if can_create %}
+{% set errors = errors|default({}) %}
+{% set values = values|default({}) %}
+<form method="post" action="/plugins/crm_app/contacts/new">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Nom<input name="name" value="{{ values.name|default('') }}" required></label>
+  {% if errors.name %}<p class="field-error">{{ errors.name }}</p>{% endif %}
+  <label>Email<input name="email" type="email" value="{{ values.email|default('') }}" required></label>
+  {% if errors.email %}<p class="field-error">{{ errors.email }}</p>{% endif %}
+  <button type="submit">Créer</button>
+</form>
+{{user.email}}
+{% else %}
+<p><em>Rôle <code>sales.create</code> requis pour ajouter un contact.</em></p>
+{% endif %}
+{% endblock %}
