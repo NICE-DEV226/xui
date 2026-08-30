@@ -1,8 +1,0 @@
-name: demo_auth
-version: "1.0.0"
-execution_mode: trusted
-entry_point: src/main.py
-permissions:
-  - resource: "*"
-    actions: ["execute"]
-    effect: allow

@@ -1,5 +1,0 @@
-fastapi>=0.135
-httpx>=0.27
-
-[xcore]
-xcoreruntime>=2.5.2
