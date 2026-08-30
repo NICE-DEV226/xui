@@ -1,0 +1,6 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Original utilise
+   attrs.dict|merge (fusion de classes) — non supporté par notre `attrs`
+   (chaîne à plat) ; adapté au patron class="... {{ class }}" déjà utilisé
+   ailleurs dans ce kit. #}
+{% uivars class="" %}
+<div {{ attrs }} class="text-sm text-ink-600 dark:text-ink-400 mt-1.5 {{ class }}">{{ slot }}</div>

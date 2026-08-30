@@ -1,0 +1,47 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Item d'accordéon —
+   behavior `accordionItem` (root/trigger/content/icon) du bundle vendorisé.
+   `header=""` rend un item sans bouton (contenu seul). #}
+{% uivars header="" icon_closed="" icon_open="" icon_position="trailing" expanded=false disabled=false accent=true class="" %}
+<div x-data="accordionItem({{ 'true' if expanded else 'false' }}, {{ 'true' if disabled else 'false' }})" x-bind="root" {{ attrs }} class="w-full {{ class }}">
+    {% if header %}
+    <button class="flex flex-1 text-left items-center {% if icon_position == 'leading' %}gap-2{% else %}justify-between{% endif %} py-4 font-medium transition-all w-full rounded-control focus-ring {% if disabled %}opacity-50 cursor-not-allowed{% endif %}"
+        x-bind="trigger">
+        {% if icon_position == 'leading' %}
+        <span x-bind="icon" class="transition-transform duration-300 {% if accent %}text-accent{% else %}text-ink-900 dark:text-ink-100{% endif %}">
+            {% if icon_closed and icon_open %}
+                <span x-show="!$data.value.includes($id('accordion-item'))">
+                    {{ icon_closed }}
+                </span>
+                <span x-show="$data.value.includes($id('accordion-item'))">
+                    {{ icon_open }}
+                </span>
+            {% else %}
+                <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+            {% endif %}
+        </span>
+        <span>{{ header }}</span>
+        {% else %}
+        <span>{{ header }}</span>
+        <span x-bind="icon" class="transition-transform duration-300 {% if accent %}text-accent{% else %}text-ink-900 dark:text-ink-100{% endif %}">
+            {% if icon_closed and icon_open %}
+                <span x-show="!$data.value.includes($id('accordion-item'))">
+                    {{ icon_closed }}
+                </span>
+                <span x-show="$data.value.includes($id('accordion-item'))">
+                    {{ icon_open }}
+                </span>
+            {% else %}
+                <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+            {% endif %}
+        </span>
+        {% endif %}
+    </button>
+    {% endif %}
+    {% if slot %}
+    <div x-bind="content" class="overflow-hidden" role="region" x-cloak>
+        <div class="pb-4 pt-0 opacity-80">
+            {{ slot }}
+        </div>
+    </div>
+    {% endif %}
+</div>

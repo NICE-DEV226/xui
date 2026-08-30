@@ -1,0 +1,60 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott) — <c-vars> -> {% uivars %},
+   |get_item:x -> [x] (Jinja2 fait le subscript nativement). `type` ajouté
+   (absent de l'original, qui suppose toujours un <button> hors formulaire) :
+   sans lui, un `type="submit"` passé par l'appelant finirait dans `attrs` ET
+   entrerait en collision avec le `type="button"` en dur du markup original. #}
+{% uivars variant="default" size="md" href="" type="button" outlined=false class="" %}
+{% set variants = {
+    'default': 'bg-white text-ink-800 border border-ink-200 dark:bg-ink-400/30 dark:text-ink-300 dark:border-ink-300/20 shadow',
+    'primary': 'bg-accent text-accent-foreground hover:bg-accent-content border border-transparent',
+    'subtle': 'bg-ink-100 text-ink-600 dark:bg-ink-300/10 dark:text-ink-300 border border-transparent',
+    'danger': 'bg-red-500 text-white hover:bg-red-600 border border-transparent',
+    'ghost': 'bg-transparent text-ink-800 dark:text-white hover:bg-ink-100 dark:hover:bg-ink-800 border border-transparent',
+    'text': 'bg-transparent text-accent hover:text-accent-content hover:underline border border-transparent',
+} %}
+{% set outlined_variants = {
+    'default': 'border border-ink-200 text-ink-800 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800',
+    'primary': 'border border-accent text-accent hover:bg-accent/10',
+    'subtle': 'border border-ink-200 text-ink-800 hover:bg-ink-100 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800',
+    'danger': 'border border-red-500 text-red-500 hover:bg-red-500/10',
+    'ghost': 'border border-ink-400 text-ink-600 hover:bg-ink-100 dark:border-ink-600 dark:text-ink-400 dark:hover:bg-ink-800',
+    'text': 'text-accent hover:text-accent-content hover:underline',
+} %}
+{% set size_classes = {
+    'xs': 'text-xs py-1 px-2',
+    'sm': 'text-sm py-1.5 px-3',
+    'md': 'text-sm py-2 px-4',
+    'lg': 'text-base py-2.5 px-4',
+    'xl': 'text-lg py-3 px-5',
+    '2xl': 'text-xl py-3.5 px-6'
+} %}
+{% if href %}
+<a
+    {{ attrs }}
+    href="{{ href }}"
+    class="
+    {% if outlined %}{{ outlined_variants[variant] }}{% else %}{{ variants[variant] }}{% endif %}
+    inline-block no-underline cursor-pointer whitespace-nowrap rounded-button
+    {{ size_classes[size] }}
+    {% if variant == 'text' %}!px-0{% endif %}
+    font-medium transition text-center
+    focus-ring
+    active:opacity-100
+    {{ class }}">
+    {{ slot }}
+</a>
+{% else %}
+<button {{ attrs }} type="{{ type }}" class="
+    {% if outlined %}{{ outlined_variants[variant] }}{% else %}{{ variants[variant] }}{% endif %}
+    cursor-pointer whitespace-nowrap rounded-button
+    {{ size_classes[size] }}
+    {% if variant == 'text' %}!px-0{% endif %}
+    font-medium transition text-center
+    focus-ring
+    active:opacity-100
+    disabled:opacity-75
+    disabled:cursor-not-allowed
+    {{ class }}">
+    {{ slot }}
+</button>
+{% endif %}

@@ -1,0 +1,14 @@
+name: ui_kit
+version: "1.0.0"
+execution_mode: trusted
+entry_point: src/main.py
+permissions:
+  - resource: "*"
+    actions: ["execute"]
+    effect: allow
+
+# docs/spec-v1.md §2.1/§8 — package_id/exports : composants réutilisables
+# par d'autres plugins via UIPackageRegistry (xui/packages.py).
+ui:
+  package_id: com.xcore.ui_kit
+  exports: ["button", "badge"]

@@ -1,0 +1,21 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). `trigger` est un named
+   slot (`<ui-slot name="trigger">`) ou une prop textuelle ; le chevron tourne
+   via Alpine lorsque `expanded` bascule. `x-collapse` exige le plugin Alpine
+   `@alpinejs/collapse` côté client (absent du bundle vendorisé). #}
+{% uivars trigger_text="" trigger="" trigger_class="inline-flex items-center gap-1.5" expanded=false chevron=true icon="" %}
+<div x-data='{ "expanded": {{ "true" if expanded else "false" }} }'>
+    <button type="button" @click="expanded = ! expanded" class="cursor-pointer text-left {{ trigger_class }}">
+        {% if trigger %}{{ trigger }}{% else %}<span>{% if trigger_text %}{{ trigger_text }}{% else %}Toggle{% endif %}</span>{% endif %}
+        {% if chevron %}
+        <span class="shrink-0 transition-transform duration-200" :class="{ 'rotate-180': expanded }">
+            {% if icon %}{{ icon }}{% else %}
+            <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+            {% endif %}
+        </span>
+        {% endif %}
+    </button>
+
+    <div x-show="expanded" x-collapse x-cloak>
+        {{ slot }}
+    </div>
+</div>

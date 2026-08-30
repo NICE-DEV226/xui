@@ -1,0 +1,16 @@
+{# Réimplémentation fonctionnelle — input range natif stylé, valeur affichée
+   via un petit script inline plutôt qu'un state-machine Alpine dédié.
+   Inspiré de django-cotton-ui (MIT, Will Abbott) dans l'esprit de l'API. #}
+{% uivars name="" value=50 min=0 max=100 step=1 show_value=false disabled=false class="" %}
+<div class="flex items-center gap-3 {{ class }}">
+    <input
+        type="range"
+        name="{{ name }}"
+        min="{{ min }}" max="{{ max }}" step="{{ step }}" value="{{ value }}"
+        {% if disabled %}disabled{% endif %}
+        {{ attrs }}
+        class="flex-1 accent-accent"
+        {% if show_value %}oninput="this.nextElementSibling.textContent = this.value"{% endif %}
+    />
+    {% if show_value %}<output class="text-sm tabular-nums text-ink-600 dark:text-ink-400 shrink-0">{{ value }}</output>{% endif %}
+</div>

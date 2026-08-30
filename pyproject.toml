@@ -4,10 +4,14 @@ version = "0.1.0"
 description = "SDK de pages server-rendues pour plugins xcore — jamais un prerequis, jamais une couche kernel."
 requires-python = ">=3.12"
 dependencies = [
-    "xcoreruntime>=2.5.2",
     "fastapi>=0.135",
     "httpx>=0.27",
 ]
+
+[project.optional-dependencies]
+# xcore n'est requis que pour mount_xui_page (résolution de l'utilisateur) —
+# le reste du SDK (composants, CSRF, forms, mounts statics) s'importe sans lui.
+xcore = ["xcoreruntime>=2.5.2"]
 
 # microframe (le vrai moteur Jinja2, https://github.com/traoreera/microframe)
 # n'est PAS ce paquet : "microframe" sur PyPI est un projet numpy sans rapport
@@ -20,6 +24,15 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["xui*"]
+
+[tool.setuptools.package-data]
+xui = [
+    "components/*.html",
+    "components/*/*.html",
+    "components/NOTICE.md",
+    "static/cotton-ui/*",
+    "static/alpine/*",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

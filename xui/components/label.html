@@ -1,0 +1,11 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Original utilise
+   attrs.dict|merge (fusion de classes) — adapté au patron class="... {{ class }}"
+   déjà utilisé ailleurs dans ce kit. `for_` plutôt que `for` : mot réservé
+   Jinja2 ({% for %}), invalide comme nom de prop. #}
+{% uivars for_="" badge="" class="" %}
+<label {{ attrs }} {% if for_ %}for="{{ for_ }}"{% endif %} class="block font-semibold text-ink-900 dark:text-ink-100 mb-1.5 {{ class }}">
+    <span class="flex items-center gap-2">
+        {{ slot }}
+        {% if badge %}<ui.badge size="sm" color="ink">{{ badge }}</ui.badge>{% endif %}
+    </span>
+</label>

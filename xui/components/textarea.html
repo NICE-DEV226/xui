@@ -1,0 +1,20 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). `autoresize` : technique
+   générique et universellement connue (ajuster height = scrollHeight),
+   pas une invention du projet source. #}
+{% uivars autoresize=false size="md" height="md" resizable=true class="" %}
+{% set size_classes = {
+    'xs': 'text-xs px-2 py-1', 'sm': 'text-sm px-2.5 py-1.5', 'md': 'text-base px-3 py-2',
+    'lg': 'text-lg px-3.5 py-2.5', 'xl': 'text-xl px-4 py-3', '2xl': 'text-2xl px-5 py-3.5'
+} %}
+{% set height_classes = {'xs': 'h-16', 'sm': 'h-24', 'md': 'h-32', 'lg': 'h-48', 'xl': 'h-64', '2xl': 'h-80'} %}
+<textarea
+    {{ attrs }}
+    {% if autoresize %}
+    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+    style="overflow-y:hidden;"
+    {% endif %}
+    class="w-full border border-ink-300 dark:border-ink-700 bg-white dark:bg-ink-900 dark:text-ink-300
+           rounded-control transition-colors focus-ring
+           {% if not resizable %}resize-none{% endif %}
+           {{ size_classes[size] }} {{ height_classes[height] }} {{ class }}"
+>{{ slot }}</textarea>

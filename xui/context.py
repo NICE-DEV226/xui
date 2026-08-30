@@ -6,17 +6,37 @@ résolu via la même fonction `_resolve_user`. `call_plugin` appelle
 `PluginContext.caller` avec exactement la même convention que
 `TrustedBase.call_plugin` (xcore.kernel.api.contract) pour rester cohérent
 avec les plugins IPC-purs.
+
+## Sans xcore
+
+`xui` s'importe et s'utilise en base (UIContext, CSRF, composants, forms,
+mounts statics) sans xcore installé : les types `AuthPayload`/`PluginContext`
+ne servent qu'à l'annotation et tombent sur `Any` si le kernel est absent
+(voir `__init__.py`). Seul `mount_xui_page` — qui résout l'utilisateur via
+`xcore.kernel.api.rbac._resolve_user` — exige xcore au moment de l'appel, pas
+à l'import.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from starlette.requests import Request
 
-from xcore.kernel.api.auth import AuthPayload
-from xcore.kernel.api.context import PluginContext
+if TYPE_CHECKING:  # types xcore utilisés seulement pour l'annotation
+    from xcore.kernel.api.auth import AuthPayload
+    from xcore.kernel.api.context import PluginContext
+else:
+    # xui est utilisable sans xcore : ces deux types ne servent qu'au typage,
+    # jamais à la logique. Au runtime on conserve des aliases optionnels.
+    try:
+        from xcore.kernel.api.auth import AuthPayload
+        from xcore.kernel.api.context import PluginContext
+    except ImportError:
+        AuthPayload = Any  # type: ignore[misc, assignment]
+        PluginContext = Any  # type: ignore[misc, assignment]
+
 
 
 class UIPermissionDenied(Exception):

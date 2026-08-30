@@ -1,0 +1,6 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Description de
+   `<ui.dialog>` — bridée au behavior `dialog` du parent via
+   `x-bind="description"`. #}
+<p x-bind="description" class="text-sm text-ink-500 dark:text-ink-400" {{ attrs }}>
+    {{ slot }}
+</p>

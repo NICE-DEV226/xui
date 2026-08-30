@@ -1,0 +1,12 @@
+{# Point de montage Alpine pour une page XUI — à poser une fois en fin de
+   <body> (typiquement dans le layout de base ou sur les pages interactives).
+   Charge Alpine core + les plugins nécessaires aux composants <ui.x>
+   (collapse → accordion, focus → x-trap des dialog/drawer) depuis les assets
+   auto-hébergés du SDK (`/xui-static/alpine/`), dans le bon ordre `defer`.
+   
+   Le plugin `x-teleport` (drawer/dialog/tooltip) est intégré au core Alpine
+   >= 3.13 : inutile de le charger séparément. Pour les pages SANS
+   interactivité, ne pas inclure ce composant (pas d'Alpine chargé). #}
+<script src="/xui-static/alpine/@alpinejs_collapse.min.js" defer></script>
+<script src="/xui-static/alpine/@alpinejs_focus.min.js" defer></script>
+<script src="/xui-static/alpine/alpinejs.min.js" defer></script>

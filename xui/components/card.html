@@ -1,0 +1,25 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). `header` est un vrai
+   named slot (<ui-slot name="header">, markup multi-lignes), contrairement
+   à icon_leading/icon_trailing du badge (props une ligne). #}
+{% uivars padding="md" variant="raised" title="" subheading="" header="" class="" %}
+{% set variant_classes = {
+    'raised': 'bg-white dark:bg-ink-900 shadow border border-ink-100 dark:border-ink-800',
+    'outline': 'border border-ink-200 dark:border-ink-700'
+} %}
+{% set padding_classes = {
+    'none': '', 'xs': 'p-2', 'sm': 'p-4', 'md': 'p-6', 'lg': 'p-8', 'xl': 'p-10', '2xl': 'p-12'
+} %}
+{% if title or subheading or header %}
+<div {{ attrs }} class="rounded-box {{ variant_classes[variant] }} {{ class }}">
+    <div class="px-6 py-4 border-b border-ink-100 dark:border-ink-800">
+        {% if title %}<h3 class="font-semibold text-ink-900 dark:text-ink-100">{{ title }}</h3>{% endif %}
+        {% if subheading %}<p class="text-sm text-ink-500 dark:text-ink-400{% if title %} mt-0.5{% endif %}">{{ subheading }}</p>{% endif %}
+        {{ header }}
+    </div>
+    <div class="{{ padding_classes[padding] }}">{{ slot }}</div>
+</div>
+{% else %}
+<div {{ attrs }} class="rounded-box {{ variant_classes[variant] }} {{ padding_classes[padding] }} {{ class }}">
+    {{ slot }}
+</div>
+{% endif %}

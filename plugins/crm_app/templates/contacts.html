@@ -1,42 +1,76 @@
-{% extends "base.html" %}
+{% extends "layouts/page.html" %}
 {% block title %}Contacts{% endblock %}
 {% block head_extra %}
 <link rel="stylesheet" href="{{ static('css/app.css') }}">
 <script src="{{ static('js/app.js') }}" defer></script>
-{% endblock %}
-{% block content %}
-<h1>{{ title }}</h1>
-<component.crm_pill>{{ contacts|length }} contact(s)</component.crm_pill>
-<table>
-  <thead>
-    <tr>
-      <th>Nom</th>
-      <th>Email</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for c in contacts %}
-    <tr>
-      <td>{{ c.name }}</td>
-      <td>{{ c.email }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"
+  integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
 
-{% if can_create %}
-{% set errors = errors|default({}) %}
-{% set values = values|default({}) %}
-<form method="post" action="/plugins/crm_app/contacts/new">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <label>Nom<input name="name" value="{{ values.name|default('') }}" required></label>
-  {% if errors.name %}<p class="field-error">{{ errors.name }}</p>{% endif %}
-  <label>Email<input name="email" type="email" value="{{ values.email|default('') }}" required></label>
-  {% if errors.email %}<p class="field-error">{{ errors.email }}</p>{% endif %}
-  <button type="submit">Créer</button>
-</form>
-{{user.email}}
-{% else %}
-<p><em>Rôle <code>sales.create</code> requis pour ajouter un contact.</em></p>
-{% endif %}
+{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_actions %}
+<span x-data>
+  <component.crm_pill>{{ contacts|length }} contact(s)</component.crm_pill>
+  <ui.button variant="text"
+    @click="$dispatch('toast', { variant: 'info', title: 'CRM', message: 'Toast serveur auto-hébergé.' })">
+    Tester un toast
+  </ui.button>
+</span>
+{% endblock %}
+{% block page_content %}
+<ui.card>
+
+  <ui.table>
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in contacts %}
+      <tr>
+        <td>{{ c.name }}</td>
+        <td>{{ c.email }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </ui.table>
+
+  {% if can_create %}
+  {% set errors = errors|default({}) %}
+  {% set values = values|default({}) %}
+  <form method="post" action="/plugins/crm_app/contacts/new">
+    <ui.input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <ui.label>
+      Nom
+      <ui.input name="name" value="{{ values.name|default('') }}" required />
+    </ui.label>
+
+    {% if errors.name %}
+    <p class="field-error">
+      {{ errors.name }}
+    </p>{% endif %}
+    <ui.label>Email
+      <ui.input name="email" type="email" value="{{ values.email|default('') }}" required="true"
+        hx-on:change="console.log('{{ value.name | default('hello')  }}')" />
+    </ui.label>
+
+    {% if errors.email %}<p class="field-error">{{ errors.email }}</p>{% endif %}
+    <ui.button type="submit" variant="primary">Créer</ui.button>
+  </form>
+  {% else %}
+  <ui.alert variant="warning" title="Accès restreint">
+    Rôle <code>sales.create</code> requis pour ajouter un contact.
+  </ui.alert>
+  {% endif %}
+</ui.card>
+{% endblock %}
+
+{% block scripts %}
+{# Alpine auto-hébergé par le SDK (assets /xui-static/alpine/) — aucun CDN.
+Le `
+<ui.toast />` est monté une fois dans base.html, donc tous les
+$dispatch('toast', ...) de cette page atteignent le store. #}
+<ui.alpine />
 {% endblock %}

@@ -1,0 +1,11 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Option unique d'un
+   `<ui.select_native>` (rendu HTML natif). #}
+{% uivars value="" disabled=false selected=false %}
+<option
+    value="{{ value }}"
+    {% if disabled %}disabled{% endif %}
+    {% if selected %}selected{% endif %}
+    {{ attrs }}
+>
+    {{ slot }}
+</option>

@@ -1,0 +1,18 @@
+{# Réimplémentation fonctionnelle — toggle switch, un pattern CSS très
+   répandu (checkbox natif caché + label stylé en piste/curseur, transform
+   sur :checked). Inspiré de django-cotton-ui (MIT, Will Abbott) dans
+   l'esprit de l'API, markup/CSS propres à ce kit. #}
+{% uivars name="" checked=false disabled=false value="on" class="" %}
+<label class="relative inline-flex items-center {% if disabled %}opacity-50 cursor-not-allowed{% else %}cursor-pointer{% endif %} {{ class }}">
+    <input
+        type="checkbox"
+        name="{{ name }}"
+        value="{{ value }}"
+        {% if checked %}checked{% endif %}
+        {% if disabled %}disabled{% endif %}
+        {{ attrs }}
+        class="peer sr-only"
+    />
+    <span class="h-6 w-11 rounded-full bg-ink-200 dark:bg-ink-700 peer-checked:bg-accent transition-colors"></span>
+    <span class="absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></span>
+</label>

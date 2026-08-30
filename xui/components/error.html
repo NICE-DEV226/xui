@@ -1,0 +1,11 @@
+{# Réécrit (pas un port) : l'original branche sur Django Forms
+   (form.errors|get_item:name, form.non_field_errors) — un système qu'on n'a
+   pas. Adapté pour se brancher directement sur xui.forms.FormResult.errors
+   (dict[str, str]), le vrai équivalent Pydantic déjà construit. #}
+{% uivars message="" errors={} name="" class="" %}
+{% set text = message or errors.get(name) %}
+{% if text %}
+<div {{ attrs }} class="text-sm text-red-600 dark:text-red-400 mt-1.5 {{ class }}">{{ text }}</div>
+{% elif slot %}
+<div {{ attrs }} class="text-sm text-red-600 dark:text-red-400 mt-1.5 {{ class }}">{{ slot }}</div>
+{% endif %}

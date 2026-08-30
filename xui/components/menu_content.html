@@ -1,0 +1,27 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Panneau du select riche —
+   traverse l'état du parent (`open`, `highlightNext()`… via le x-data de
+   `menu.html`). `x-ref="content"` attendu par le parent pour le focus. #}
+{% uivars max_height="max-h-60" %}
+<div
+    x-show="open"
+    x-transition:enter="transition ease-out duration-100"
+    x-transition:enter-start="opacity-0 translate-y-1"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-75"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 translate-y-1"
+    @keydown.down.prevent="highlightNext()"
+    @keydown.up.prevent="highlightPrev()"
+    @keydown.enter.prevent="selectHighlighted()"
+    x-ref="content"
+    tabindex="-1"
+    {{ attrs }}
+    class="absolute z-50 w-full rounded-box border bg-white dark:bg-ink-900 border-[color:var(--color-box-border)] shadow-lg {{ max_height }} overflow-auto text-left focus:outline-none"
+    style="display: none;"
+>
+    {{ slot }}
+
+    <div x-show="filteredOptions.length === 0" class="px-3 py-6 text-center text-sm text-ink-500 dark:text-ink-400">
+        No options found
+    </div>
+</div>

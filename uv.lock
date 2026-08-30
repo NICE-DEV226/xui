@@ -1821,11 +1821,18 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
+    { name = "httpx" },
+]
+
+[package.optional-dependencies]
+xcore = [
     { name = "xcoreruntime" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.135" },
-    { name = "xcoreruntime", specifier = ">=2.5.2" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "xcoreruntime", marker = "extra == 'xcore'", specifier = ">=2.5.2" },
 ]
+provides-extras = ["xcore"]

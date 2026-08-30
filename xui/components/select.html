@@ -1,0 +1,26 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott) ; index/impl fusionnés.
+   Sélection simple à bascule : `variant="native"` (par défaut) → `<ui.select_native>`,
+   `variant="listbox"` → le select riche `<ui.menu>` (option de `select/listbox/`).
+   Les `<ui.select_option>` du `slot` Forment la liste d'options. Si un
+   `label`/`description`/`description_trailing`/`error` est fourni, un wrapper
+   `<ui.field>` encadre le champ. #}
+{% uivars variant="native" label="" description="" description_trailing="" error="" badge="" form=false name="" placeholder="Select an option" value="" disabled=false size="md" required=false class="" %}
+{% set select_body %}
+{% if variant == "listbox" %}
+<ui.menu name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}" disabled="{{ disabled }}" size="{{ size }}" required="{{ required }}" {{ attrs }}>
+    {{ slot }}
+</ui.menu>
+{% else %}
+<ui.select_native name="{{ name }}" placeholder="{{ placeholder }}" value="{{ value }}" disabled="{{ disabled }}" size="{{ size }}" required="{{ required }}" {{ attrs }}>
+    {{ slot }}
+</ui.select_native>
+{% endif %}
+{% endset %}
+
+{% if label or description or description_trailing or error %}
+<ui.field label="{{ label }}" description="{{ description }}" description_trailing="{{ description_trailing }}" error="{{ error }}" badge="{{ badge }}" name="{{ name }}">
+    {{ select_body }}
+</ui.field>
+{% else %}
+{{ select_body }}
+{% endif %}

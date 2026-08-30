@@ -1,0 +1,11 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). #}
+{% uivars value=0 color="accent" size="md" show_value=false class="" %}
+{% set size_classes = {'xs': 'h-1', 'sm': 'h-1.5', 'md': 'h-2', 'lg': 'h-3', 'xl': 'h-4'} %}
+{% set color_classes = {'accent': 'bg-accent', 'green': 'bg-green-500', 'amber': 'bg-amber-500', 'red': 'bg-red-500'} %}
+<div class="flex items-center gap-3 {{ class }}">
+    <div role="progressbar" aria-valuenow="{{ value }}" aria-valuemin="0" aria-valuemax="100" {{ attrs }}
+        class="flex-1 {{ size_classes[size] }} bg-ink-200 dark:bg-ink-700 rounded-full overflow-hidden">
+        <div class="h-full rounded-full transition-[width] duration-500 ease-out {{ color_classes[color] }}" style="width: {{ value }}%"></div>
+    </div>
+    {% if show_value %}<span class="shrink-0 w-10 text-right text-sm font-medium text-ink-600 dark:text-ink-400 tabular-nums">{{ value }}%</span>{% endif %}
+</div>

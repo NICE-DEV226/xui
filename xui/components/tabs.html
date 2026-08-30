@@ -1,0 +1,71 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). État des onglets en Alpine
+   inline (aucun behavior bundle requis) : les `<ui.tab name="...">` s'auto-
+   enregistrent via `x-init` au chargement. `default_tab` vide laisse le
+   premier onglet actif. #}
+{% uivars default_tab=none variant="default" size="md" accent=true fill=false class="" %}
+<div x-data="{
+    tabs: [],
+    activeTab: '{{ default_tab or '' }}',
+    register(name, icon) {
+        this.tabs.push({name: name, icon: icon});
+        if (!this.activeTab && this.tabs.length === 1) {
+            this.activeTab = name;
+        }
+    },
+    isActive(name) {
+        return this.activeTab === name;
+    }
+}"
+class="w-full space-y-4"
+{{ attrs }}>
+
+    <div class="
+        flex items-center
+        {% if variant == 'segmented' %}
+            bg-ink-100 dark:bg-ink-800 p-1 rounded-box
+        {% else %}
+            border-b border-ink-200 dark:border-ink-700 w-full
+        {% endif %}
+        overflow-x-auto no-scrollbar
+    ">
+        <template x-for="tab in tabs" :key="tab.name">
+            <button type="button"
+                @click="activeTab = tab.name"
+                class="
+                    inline-flex items-center justify-center whitespace-nowrap transition-all focus-ring
+                    {% if fill %}flex-1{% endif %}
+                    disabled:pointer-events-none disabled:opacity-50
+                    {% if size == 'sm' %}text-xs px-2.5 py-1
+                    {% elif size == 'lg' %}text-base px-4 py-2
+                    {% else %}text-sm px-3 py-1.5{% endif %}
+
+                    {% if variant == 'segmented' %}
+                        rounded-control font-medium
+                    {% else %}
+                        border-b-2 -mb-px font-medium rounded-t-md
+                    {% endif %}
+                "
+                :class="{
+                    {% if variant == 'segmented' %}
+                        'bg-white text-ink-950 shadow-sm dark:bg-ink-950 dark:text-ink-50': isActive(tab.name),
+                        'text-ink-500 hover:text-ink-900 dark:text-ink-400 dark:hover:text-ink-100': !isActive(tab.name)
+                    {% else %}
+                        {% if accent %}
+                            'border-accent text-accent': isActive(tab.name),
+                        {% else %}
+                            'border-ink-900 text-ink-900 dark:border-ink-100 dark:text-ink-100': isActive(tab.name),
+                        {% endif %}
+                        'border-transparent text-ink-500 hover:border-ink-300 hover:text-ink-700 dark:text-ink-400 dark:hover:border-ink-600 dark:hover:text-ink-200': !isActive(tab.name)
+                    {% endif %}
+                }"
+            >
+                <span x-show="tab.icon" x-html="tab.icon" class="mr-2 [&>svg]:size-4 flex items-center"></span>
+                <span x-text="tab.name"></span>
+            </button>
+        </template>
+    </div>
+
+    <div class="mt-2 focus-ring">
+        {{ slot }}
+    </div>
+</div>

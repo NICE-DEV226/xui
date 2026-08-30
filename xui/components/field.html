@@ -1,0 +1,25 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott), simplifié : `error`
+   est ici une simple chaîne (voir ui/error.html — adapté à xui.forms), pas
+   un lookup Django form/name. #}
+{% uivars variant="block" label="" description="" description_trailing="" error="" badge="" class="" %}
+{% if variant == "toggle" %}
+<div {{ attrs }} class="space-y-1.5 {{ class }}">
+    <div class="flex items-start justify-between gap-4">
+        <div class="space-y-1">
+            {% if label %}<ui.label badge="{{ badge }}">{{ label }}</ui.label>{% endif %}
+            {% if description %}<ui.description>{{ description }}</ui.description>{% endif %}
+        </div>
+        <div class="shrink-0">{{ slot }}</div>
+    </div>
+    {% if description_trailing %}<ui.description>{{ description_trailing }}</ui.description>{% endif %}
+    {% if error %}<ui.error message="{{ error }}" />{% endif %}
+</div>
+{% else %}
+<div {{ attrs }} class="{% if variant == 'inline' %}flex items-start gap-4{% else %}space-y-1.5{% endif %} {{ class }}">
+    {% if label %}<ui.label badge="{{ badge }}">{{ label }}</ui.label>{% endif %}
+    {% if description %}<ui.description>{{ description }}</ui.description>{% endif %}
+    {{ slot }}
+    {% if description_trailing %}<ui.description>{{ description_trailing }}</ui.description>{% endif %}
+    {% if error %}<ui.error message="{{ error }}" />{% endif %}
+</div>
+{% endif %}

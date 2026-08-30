@@ -1,0 +1,31 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Barre de recherche sticky
+   du select riche — `data-select-search` est ciblé par `menu.html` pour le
+   focus à l'ouverture ; les touches flèches s'appuient sur les handlers de
+   `menu_content`, aucune gestion propre ici. #}
+{% uivars placeholder="Search..." %}
+<div class="sticky top-0 z-10 p-2 border-b border-ink-200 dark:border-ink-700 bg-white dark:bg-ink-900">
+    <div class="relative">
+        <svg
+            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+        >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+
+        <input
+            type="text"
+            data-select-search
+            x-model="search"
+            @keydown.escape.stop.prevent="searchEscape()"
+            placeholder="{{ placeholder }}"
+            {{ attrs }}
+            class="w-full pl-9 pr-3 py-2 text-sm rounded-control
+                   bg-[var(--color-input-bg)]
+                   border border-ink-300 dark:border-ink-700
+                   focus-ring
+                   placeholder:text-ink-400 dark:placeholder:text-ink-500"
+        />
+    </div>
+</div>

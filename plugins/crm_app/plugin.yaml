@@ -7,6 +7,11 @@ permissions:
     actions: ["execute"]
     effect: allow
 
+# Garantit — via le tri topologique réel du kernel, pas une résolution
+# best-effort côté xui — que ui_kit charge avant crm_app (docs/spec-v1.md §8).
+requires:
+  - ui_kit
+
 # Bloc libre (docs/spec-v1.md §2.1) : non typé dans manifest_schema.json,
 # capturé tel quel par PluginManifest dans `.extra` -> PluginContext.config.
 ui:

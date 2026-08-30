@@ -1,0 +1,16 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Behaviors Alpine
+   `accordion`/`accordionItem` fournis par le bundle cotton-ui.min.js vendorisé.
+   `icon_closed`/`icon_open` peuvent être fournis une fois sur le conteneur
+   (templates) pour s'appliquer à tous les items. #}
+{% uivars type="single" collapsible=true disabled=false icon_closed="" icon_open="" class="" %}
+<div x-data="accordion('{{ type }}', {{ 'true' if collapsible else 'false' }}, {{ 'true' if disabled else 'false' }})"
+    {{ attrs }}
+    class="w-full divide-y divide-ink-200 dark:divide-ink-700 {{ class }}">
+    {% if icon_closed %}
+    <template data-accordion-icon-closed>{{ icon_closed }}</template>
+    {% endif %}
+    {% if icon_open %}
+    <template data-accordion-icon-open>{{ icon_open }}</template>
+    {% endif %}
+    {{ slot }}
+</div>

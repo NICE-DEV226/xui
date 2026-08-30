@@ -1,0 +1,25 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). `separator` est un vrai
+   named slot (<ui-slot name="separator">) ; sans lui, séparateur "/" en CSS. #}
+{% uivars class="" separator="" %}
+<nav
+    aria-label="Breadcrumb"
+    {{ attrs }}
+    {% if separator %}
+    x-data
+    x-init="
+        const tpl = $refs.bcSeparator;
+        $el.querySelectorAll('ol > li:not(:first-child)').forEach((li) => {
+            const sep = document.createElement('span');
+            sep.className = 'mr-0.5 inline-flex items-center text-ink-300 dark:text-ink-600';
+            sep.append(tpl.content.cloneNode(true));
+            li.prepend(sep);
+        });
+    "
+    {% endif %}
+>
+  {% if separator %}<template x-ref="bcSeparator">{{ separator }}</template>{% endif %}
+  <ol
+    class="flex items-center flex-wrap gap-1.5 text-sm text-ink-500 dark:text-ink-400 {{ class }}"
+    style="--bc-separator: {% if separator %}none{% else %}'/'{% endif %}"
+  >{{ slot }}</ol>
+</nav>

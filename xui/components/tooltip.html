@@ -1,0 +1,203 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Tout le comportement est
+   en Alpine inline (x-teleport, intégré au core Alpine ≥ 3.13 — pas de plugin
+   séparé requis) : positionnement en coordonnées document, flip automatique
+   près des bords, flèche alignée sur le centre du
+   trigger. `content` est la prop texte/HTML affichée, `slot` le déclencheur. #}
+{% uivars position="top" offset="4" content="" size="md" arrow=true open=false delay=0 %}
+{% set size_classes = {
+    'xs': 'px-1.5 py-0.5 text-xs',
+    'sm': 'px-2 py-1 text-xs',
+    'md': 'px-3 py-1.5 text-sm',
+    'lg': 'px-4 py-2.5 text-base',
+    'xl': 'px-5 py-3 text-lg',
+    '2xl': 'px-6 py-3.5 text-xl',
+} %}
+{#
+`delay` est un délai d'ouverture par hover-intent (ms ; 0 = immédiat,
+rétro-compatible). Mettez ~300-500 quand le tooltip porte une info non
+essentielle qui ne doit apparaître que sur un survol volontaire, pas sur un
+passage furtif de souris. Le garde-fou d'instonction ductile (~80 ms) est
+indépendant et toujours actif : il évite que le tooltip disparaisse pendant un
+déplacement rapide entre trigger et tooltip.
+#}
+
+<div
+    x-data="{
+        forceOpen: {{ "true" if open else "false" }},
+        open: {{ "true" if open else "false" }},
+        hoverState: { trigger: false },
+        hideTimeout: null,
+        openTimeout: null,
+        openDelay: {{ delay }},
+        tooltipPosition: { x: 0, y: 0 },
+        arrowOffset: 0,
+        currentPos: '{{ position }}',
+        init() {
+            this._onResize = () => { if (this.open) this.updatePosition(); };
+            window.addEventListener('resize', this._onResize);
+            if (this.forceOpen) this.$nextTick(() => requestAnimationFrame(() => this.updatePosition()));
+        },
+        destroy() {
+            window.removeEventListener('resize', this._onResize);
+        },
+        enterTrigger() {
+            this.hoverState.trigger = true;
+            if (this.openDelay > 0) {
+                clearTimeout(this.openTimeout);
+                this.openTimeout = setTimeout(() => {
+                    if (this.hoverState.trigger) this.checkOpen();
+                }, this.openDelay);
+            } else {
+                this.checkOpen();
+            }
+        },
+        leaveTrigger() {
+            this.hoverState.trigger = false;
+            clearTimeout(this.openTimeout);
+            this.checkClose();
+        },
+        checkOpen() {
+            clearTimeout(this.hideTimeout);
+            if (!this.open) {
+                this.open = true;
+            }
+            this.$nextTick(() => requestAnimationFrame(() => this.updatePosition()));
+        },
+        checkClose() {
+            if (this.forceOpen) return;
+            clearTimeout(this.hideTimeout);
+            this.hideTimeout = setTimeout(() => {
+                if (!this.hoverState.trigger) {
+                    this.open = false;
+                }
+            }, 80);
+        },
+        updatePosition() {
+            if (!this.open) return;
+
+            const trigger = this.$refs.trigger;
+            const tooltip = this.$refs.tooltip;
+            if (!trigger || !tooltip) return;
+
+            const triggerRect = trigger.getBoundingClientRect();
+            const tw = tooltip.offsetWidth;
+            const th = tooltip.offsetHeight;
+            if (tw === 0 || th === 0) {
+                requestAnimationFrame(() => this.updatePosition());
+                return;
+            }
+            {# Quand la flèche est affichée elle dépasse ~4px du tooltip : on
+               l'ajoute à l'espace et l'offset configuré devient l'espace
+               passé la pointe de la flèche. #}
+            const gap = {{ offset }} + {% if arrow %}4{% else %}0{% endif %};
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const margin = 8;
+
+            const spaceAbove = triggerRect.top - gap - margin;
+            const spaceBelow = vh - triggerRect.bottom - gap - margin;
+            const spaceLeft = triggerRect.left - gap - margin;
+            const spaceRight = vw - triggerRect.right - gap - margin;
+            const keepX = Math.min(triggerRect.width, tw, 24);
+            const keepY = Math.min(triggerRect.height, th, 24);
+            const xOverlaps = Math.max(margin, triggerRect.left - tw + keepX) <= Math.min(vw - tw - margin, triggerRect.right - keepX);
+            const yOverlaps = Math.max(margin, triggerRect.top - th + keepY) <= Math.min(vh - th - margin, triggerRect.bottom - keepY);
+            const fits = {
+                top: spaceAbove >= th && xOverlaps,
+                bottom: spaceBelow >= th && xOverlaps,
+                left: spaceLeft >= tw && yOverlaps,
+                right: spaceRight >= tw && yOverlaps,
+            };
+            const order = {
+                top: ['top', 'bottom', 'left', 'right'],
+                bottom: ['bottom', 'top', 'left', 'right'],
+                left: ['left', 'right', 'top', 'bottom'],
+                right: ['right', 'left', 'top', 'bottom'],
+            }['{{ position }}'];
+            let pos = order.find(function (p) { return fits[p]; }) || '{{ position }}';
+
+            let x = 0, y = 0;
+
+            switch (pos) {
+                case 'top':
+                    x = triggerRect.left + (triggerRect.width / 2) - (tw / 2);
+                    y = triggerRect.top - th - gap;
+                    break;
+                case 'bottom':
+                    x = triggerRect.left + (triggerRect.width / 2) - (tw / 2);
+                    y = triggerRect.bottom + gap;
+                    break;
+                case 'left':
+                    x = triggerRect.left - tw - gap;
+                    y = triggerRect.top + (triggerRect.height / 2) - (th / 2);
+                    break;
+                case 'right':
+                    x = triggerRect.right + gap;
+                    y = triggerRect.top + (triggerRect.height / 2) - (th / 2);
+                    break;
+            }
+
+            if (pos === 'top' || pos === 'bottom') {
+                x = Math.max(margin, Math.min(x, vw - tw - margin));
+                x = Math.max(triggerRect.left - tw + keepX, Math.min(x, triggerRect.right - keepX));
+            } else {
+                y = Math.max(margin, Math.min(y, vh - th - margin));
+                y = Math.max(triggerRect.top - th + keepY, Math.min(y, triggerRect.bottom - keepY));
+            }
+
+            const pad = 10;
+            if (pos === 'top' || pos === 'bottom') {
+                const center = triggerRect.left + triggerRect.width / 2;
+                const aim = Math.max(Math.max(x, triggerRect.left) + pad, Math.min(center, Math.min(x + tw, triggerRect.right) - pad));
+                this.arrowOffset = Math.max(pad, Math.min(aim - x, tw - pad));
+            } else {
+                const center = triggerRect.top + triggerRect.height / 2;
+                const aim = Math.max(Math.max(y, triggerRect.top) + pad, Math.min(center, Math.min(y + th, triggerRect.bottom) - pad));
+                this.arrowOffset = Math.max(pad, Math.min(aim - y, th - pad));
+            }
+
+            this.currentPos = pos;
+            this.tooltipPosition = { x: x + window.scrollX, y: y + window.scrollY };
+        }
+    }"
+    class="relative inline-block"
+>
+    <div
+        @mouseenter="enterTrigger()"
+        @mouseleave="leaveTrigger()"
+        @focus="enterTrigger()"
+        @blur="leaveTrigger()"
+        x-ref="trigger"
+        class="inline-block"
+    >
+        {{ slot }}
+    </div>
+
+    <template x-teleport="body">
+        <div
+            x-show="open"
+            x-cloak
+            x-transition:enter="transition ease-out duration-100"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-75"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            x-ref="tooltip"
+            role="tooltip"
+            class="absolute z-[100] w-max max-w-xs rounded-control bg-ink-900 dark:bg-ink-700 {{ size_classes[size] }} font-medium text-white shadow-lg pointer-events-none"
+            :style="`left: ${tooltipPosition.x}px; top: ${tooltipPosition.y}px;`"
+        >
+            {{ content }}
+            {% if arrow %}
+            <div
+                class="absolute w-2 h-2 bg-ink-900 dark:bg-ink-700"
+                :style="currentPos === 'top'    ? `left:${arrowOffset}px; bottom:-4px; transform:translateX(-50%) rotate(45deg)`
+                      : currentPos === 'bottom' ? `left:${arrowOffset}px; top:-4px; transform:translateX(-50%) rotate(45deg)`
+                      : currentPos === 'left'   ? `top:${arrowOffset}px; right:-4px; transform:translateY(-50%) rotate(45deg)`
+                      :                           `top:${arrowOffset}px; left:-4px; transform:translateY(-50%) rotate(45deg)`"
+            ></div>
+            {% endif %}
+        </div>
+    </template>
+</div>

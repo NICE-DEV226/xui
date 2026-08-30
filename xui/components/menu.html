@@ -1,0 +1,157 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Select riche : son état
+   (open/search/selected/options) vit dans un `x-data` inline Alpine, les
+   enfants (`menu_trigger`/`menu_content`/`menu_item`/…) s'y branchent par
+   `x-ref`/méthodes. `trigger`/`content` sont des named slots optionnels ;
+   sans eux le composant auto-rend trigger + contenu. #}
+{% uivars name="" placeholder="Select an option" value="" disabled=false size="md" required=false trigger="" content="" %}
+<div
+    x-data="{
+        open: false,
+        focused: false,
+        search: '',
+        selected: '{{ value }}' || null,
+        selectedLabel: '',
+        selectedOption: null,
+        highlightedIndex: -1,
+        options: [],
+        disabled: {{ "true" if disabled else "false" }},
+
+        init() {
+            this.$nextTick(() => {
+                const optionElements = this.$el.querySelectorAll('[data-select-option]');
+                this.options = Array.from(optionElements).map((el, index) => {
+                    const iconEl = el.querySelector('.flex-shrink-0.w-5.h-5');
+                    const iconHtml = iconEl ? iconEl.innerHTML : '';
+
+                    return {
+                        value: el.dataset.value,
+                        label: el.dataset.label,
+                        description: el.dataset.description || '',
+                        group: el.dataset.group || '',
+                        icon: iconHtml,
+                        element: el,
+                        index: index
+                    };
+                });
+
+                if (this.selected) {
+                    const initialOption = this.options.find(opt => opt.value === this.selected);
+                    if (initialOption) {
+                        this.selectedLabel = initialOption.label;
+                        this.selectedOption = initialOption;
+                    }
+                }
+            });
+
+            this._cleanupReposition = window.CottonUI.watchReposition(() => {
+                if (this.open) this.position();
+            });
+
+            this.$watch('search', () => {
+                this.highlightedIndex = this.filteredOptions.length ? 0 : -1;
+            });
+        },
+
+        destroy() {
+            this._cleanupReposition && this._cleanupReposition();
+        },
+
+        position() {
+            window.CottonUI.positionPopover(this.$refs.trigger, this.$refs.content, {
+                position: 'bottom', align: 'stretch', offset: 8, responsive: true,
+            });
+        },
+
+        get filteredOptions() {
+            if (!this.search) return this.options;
+            const searchLower = this.search.toLowerCase();
+            return this.options.filter(opt =>
+                opt.label.toLowerCase().includes(searchLower) ||
+                opt.description.toLowerCase().includes(searchLower)
+            );
+        },
+
+        selectedOption: null,
+        selectOption(option) {
+            this.selected = option.value;
+            this.selectedLabel = option.label;
+            this.selectedOption = this.options.find(opt => opt.value === option.value) || null;
+            this.open = false;
+            this.search = '';
+            this.$dispatch('select-change', { value: option.value, label: option.label });
+            this.$refs.trigger?.focus();
+        },
+
+        toggle() {
+            if (!this.disabled) {
+                this.open = !this.open;
+                if (this.open) {
+                    this.$nextTick(() => {
+                        this.position();
+                        this.highlightedIndex = this.filteredOptions.findIndex(o => o.value === this.selected);
+                        const searchInput = this.$refs.content?.querySelector('[data-select-search]');
+                        if (searchInput) searchInput.focus();
+                        else this.$refs.content?.focus();
+                    });
+                }
+            }
+        },
+
+        close(returnFocus = false) {
+            this.open = false;
+            this.search = '';
+            if (returnFocus) this.$refs.trigger?.focus();
+        },
+
+        searchEscape() {
+            if (this.search.length) this.search = '';
+            else this.close(true);
+        },
+
+        highlightNext() {
+            if (this.highlightedIndex < this.filteredOptions.length - 1) {
+                this.highlightedIndex++;
+                this.scrollToHighlighted();
+            }
+        },
+
+        highlightPrev() {
+            if (this.highlightedIndex > 0) {
+                this.highlightedIndex--;
+                this.scrollToHighlighted();
+            }
+        },
+
+        selectHighlighted() {
+            const option = this.filteredOptions[this.highlightedIndex];
+            if (option) this.selectOption(option);
+        },
+
+        scrollToHighlighted() {
+            const highlighted = this.$el.querySelector('[data-highlighted=true]');
+            if (highlighted) {
+                highlighted.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+    }"
+    @click.outside="close()"
+    @keydown.escape.window="open && close(true)"
+    {{ attrs }}
+    class="relative w-full"
+>
+    <input type="hidden" name="{{ name }}" x-model="selected" {% if required %}required{% endif %} />
+
+    {% if trigger %}
+        {{ trigger }}
+    {% else %}
+        <ui.menu_trigger placeholder="{{ placeholder }}" size="{{ size }}" />
+    {% endif %}
+
+    {% if content %}
+        {{ content }}
+    {% else %}
+        <ui.menu_content>
+            {{ slot }}
+        </ui.menu_content>
+    {% endif %}
+</div>

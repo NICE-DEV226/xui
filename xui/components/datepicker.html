@@ -1,0 +1,91 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott) ; index/impl fusionnés
+   (comme input.html). Behavior `datePicker` du bundle vendorisé + composant
+   `<ui.calendar>` comme calendrier dépliant. Si un `label`/`description`/
+   `description_trailing`/`error` est fourni, un wrapper `<ui.field>` encadre
+   automatiquement le champ. Sérialise via champs cachés émis par
+   `<ui.calendar>` (utilisez `name`/`fromName`/`toName`). #}
+{% uivars label="" description="" description_trailing="" error="" badge="" form=false name="" size="md" class="" open=false value=none mode="single" format="auto" locale="" value_format="yyyy-MM-dd" close_on_complete=true trap=true fromName="" toName="" min=none max=none min_date="" max_date="" disabled_days=none disabled_dates=none required=none %}
+{% set size_classes = {
+    'xs': 'text-xs min-h-8 px-2 py-1',
+    'sm': 'text-sm min-h-9 px-2.5 py-1.5',
+    'md': 'text-sm min-h-10 px-3 py-2',
+    'lg': 'text-base min-h-11 px-4 py-2.5',
+    'xl': 'text-lg min-h-12 px-5 py-3',
+    '2xl': 'text-xl min-h-14 px-6 py-3.5'
+} %}
+{% set datepicker_body %}
+<div
+    x-ref="datePickerInput"
+    x-modelable="value"
+    x-data='datePicker({{ open|tojson }}, {{ value|tojson }}, {{ mode|tojson }}, {{ format|tojson }}, {{ value_format|tojson }}, {{ locale|tojson }}, {{ close_on_complete|tojson }}, {{ trap|tojson }})'
+    x-bind="root"
+    @change="onCalendarChange($event.detail)"
+    {{ attrs }}
+    class="relative {{ class }}">
+    <button type="button" x-bind="trigger"
+        :class="{ 'ring-[length:var(--focus-ring-width)] ring-[var(--focus-ring-color)]': open }"
+        :style="open ? { borderColor: 'var(--color-accent)' } : {}"
+        class="inline-flex items-center justify-start w-full {{ size_classes[size] }} font-normal text-left border border-ink-300 dark:border-ink-600 rounded-control bg-[var(--color-input-bg)] hover:bg-ink-50 dark:hover:bg-ink-700 focus-ring transition-colors">
+        <svg class="mr-2 h-4 w-4 text-ink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <template x-if="mode != 'multiple' && mode != 'range'">
+            <span x-text="value == null ? 'Pick a date' : formatDate(value)"></span>
+        </template>
+        <template x-if="mode == 'multiple'">
+            <span>
+                <template x-if="!value">
+                    <span>Select date(s)</span>
+                </template>
+                <template x-if="value">
+                    <template x-for="(item, index) in value">
+                        <span x-text="formatDate(item)" class="text-sm border-border mr-1"></span>
+                    </template>
+                </template>
+            </span>
+        </template>
+        <template x-if="mode == 'range'">
+            <span class="min-h-5">
+                <template x-if="!value?.from && !value?.to">
+                    <span>Pick a range of dates</span>
+                </template>
+                <template x-if="value?.from">
+                    <span x-text="formatDate(value.from)"></span>
+                </template>
+                <template x-if="value?.to">
+                    <span x-text="' - ' + formatDate(value.to)"></span>
+                </template>
+            </span>
+        </template>
+    </button>
+
+    <div x-ref="content" x-bind="calendar" x-cloak class="absolute z-50">
+        <ui.calendar
+            required="{{ required }}"
+            mode="{{ mode }}"
+            selected="{{ value }}"
+            min="{{ min }}"
+            max="{{ max }}"
+            min_date="{{ min_date }}"
+            max_date="{{ max_date }}"
+            disabled_days="{{ disabled_days }}"
+            disabled_dates="{{ disabled_dates }}"
+            name="{{ name }}"
+            fromName="{{ fromName }}"
+            toName="{{ toName }}"
+            value_format="{{ value_format }}"
+            x-model="value"
+            tabindex="0"
+            class="focus-ring" />
+    </div>
+</div>
+{% endset %}
+
+{% if label or description or description_trailing or error %}
+<ui.field label="{{ label }}" description="{{ description }}" description_trailing="{{ description_trailing }}" error="{{ error }}" badge="{{ badge }}" name="{{ name }}">
+    {{ datepicker_body }}
+</ui.field>
+{% else %}
+{{ datepicker_body }}
+{% endif %}

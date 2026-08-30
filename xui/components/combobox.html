@@ -1,0 +1,153 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott) ; index/impl fusionnés
+   (comme input.html). Behavior `combobox` du bundle vendorisé : sélection
+   multiple par tags, recherche, création libre (writable), désactivation.
+   `selected`/`options` sont des listes de chaînes sérialisées côté client via
+   `initSelected`/`initOptions` (équivalent de `json_dumps_uri`). Si un
+   `label`/`description`/`description_trailing`/`error` est fourni, un wrapper
+   `<ui.field>` encadre le champ. #}
+{% uivars label="" description="" description_trailing="" error="" badge="" form=false name="" class="" options=[] selected=[] placeholder="" max_tags=-1 writable=false searchable=false close_after_selecting=false autoclose=false disabled=false size="md" %}
+{% set size_classes = {
+    'xs': 'text-xs min-h-8 py-0.5 px-1.5',
+    'sm': 'text-sm min-h-9 py-1 px-2',
+    'md': 'text-sm min-h-[42px] py-1.5 px-2',
+    'lg': 'text-base min-h-12 py-2 px-2.5',
+    'xl': 'text-lg min-h-14 py-2.5 px-3',
+    '2xl': 'text-xl min-h-16 py-3 px-3.5'
+} %}
+{% set combobox_body %}
+<div x-data="combobox({
+        name: '{{ name }}',
+        placeholder: '{{ placeholder }}',
+        maxTags: {{ max_tags }},
+        writable: {{ "true" if writable else "false" }},
+        searchable: {{ "true" if searchable else "false" }},
+        closeAfterSelecting: {{ "true" if close_after_selecting else "false" }},
+        autoclose: {{ "true" if autoclose else "false" }},
+        disabled: {{ "true" if disabled else "false" }}
+     })"
+     x-init="
+        initSelected('{{ selected|tojson|urlencode }}');
+        initOptions('{{ options|tojson|urlencode }}');
+     "
+     class="relative w-full group {{ class }}"
+>
+    <div x-ref="trigger"
+         @click="openDropdown()"
+         @keydown.backspace.prevent="removeLastTag()"
+         @keydown.enter.prevent="isOpen ? handleEnter() : openDropdown()"
+         @keydown.space.prevent="isOpen ? handleEnter() : openDropdown()"
+         @keydown.arrow-down.prevent="isOpen ? highlightNext() : openDropdown()"
+         @keydown.arrow-up.prevent="isOpen && highlightPrev()"
+         @keydown.escape.stop="isOpen && closeDropdown()"
+         tabindex="0"
+         :style="isOpen ? { borderColor: 'var(--color-accent)' } : {}"
+         class="
+            flex flex-wrap items-center w-full gap-1.5 {{ size_classes[size] }}
+            bg-[var(--color-input-bg)]
+            border border-ink-300 dark:border-ink-700
+            rounded-control shadow-[var(--shadow-input)]
+            focus-within:ring-[length:var(--focus-ring-width)] focus-within:ring-[var(--focus-ring-color)]
+            transition-all duration-200 cursor-text
+         "
+         :class="{
+            'opacity-60 cursor-not-allowed bg-ink-50 dark:bg-ink-900': disabled,
+            'ring-[length:var(--focus-ring-width)] ring-[var(--focus-ring-color)]': isOpen
+         }">
+
+        <template x-for="(tag, index) in tags" :key="index">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-ink-100 dark:bg-ink-700 text-ink-800 dark:text-ink-200 border border-ink-200 dark:border-ink-600">
+                <span x-text="tag"></span>
+                <button type="button"
+                        @click.stop="removeTag(tag)"
+                        class="ml-1.5 inline-flex items-center justify-center h-4 w-4 rounded-full text-ink-400 hover:bg-ink-200 hover:text-ink-600 dark:hover:bg-ink-600 dark:hover:text-ink-300 focus-ring"
+                        :disabled="disabled">
+                    <span class="sr-only">Remove tag</span>
+                    <svg class="h-3 w-3" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+                        <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+                    </svg>
+                </button>
+            </span>
+        </template>
+
+        <span x-show="tags.length === 0" class="text-ink-500 dark:text-ink-400 text-sm px-1 select-none" x-text="getPlaceholder"></span>
+
+        <div class="absolute right-2 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none">
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd" />
+            </svg>
+        </div>
+    </div>
+
+    <div x-ref="content"
+         x-show="isOpen"
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         @click.outside="closeDropdown()"
+         class="absolute z-50 left-0 right-0 bg-white dark:bg-ink-900 border border-ink-200 dark:border-ink-700 rounded-control shadow-lg overflow-hidden"
+         style="display: none;">
+
+        <div x-show="searchable || writable" class="p-2 border-b border-ink-100 dark:border-ink-700">
+            <input x-model="searchTerm"
+                   x-ref="searchInput"
+                   @keydown.enter.stop.prevent="handleEnter()"
+                   @keydown.escape.stop="closeDropdown()"
+                   @keydown.arrow-down.prevent="highlightNext()"
+                   @keydown.arrow-up.prevent="highlightPrev()"
+                   class="w-full px-3 py-2 text-sm border border-ink-300 dark:border-ink-600 dark:bg-ink-700 dark:text-ink-200 rounded-control focus-ring"
+                   :placeholder="writable ? 'Search or add new...' : 'Search...'"
+                   type="text">
+        </div>
+
+        <div class="max-h-60 overflow-y-auto py-1" x-ref="optionsList">
+            <template x-for="(option, index) in filteredOptions" :key="index">
+                <div data-combobox-option
+                     class="px-3 py-2 text-sm cursor-pointer select-none flex items-center justify-between text-ink-900 dark:text-ink-100"
+                     :class="{
+                        'bg-ink-100 dark:bg-ink-800': index === highlightedIndex
+                     }"
+                     @click="selectOption(option)"
+                     @mouseover="highlightedIndex = index">
+                    <span x-text="option"></span>
+                    <span x-show="tags.includes(option)" class="flex items-center text-accent">
+                        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                </div>
+            </template>
+
+            <div x-show="showCreateOption"
+                 class="px-3 py-2 text-sm cursor-pointer select-none text-ink-500 dark:text-ink-400"
+                 :class="{
+                    'bg-ink-100 dark:bg-ink-800': highlightedIndex === filteredOptions.length
+                 }"
+                 @click="addTag(searchTerm)"
+                 @mouseover="highlightedIndex = filteredOptions.length">
+                Create "<span x-text="searchTerm" class="font-medium text-ink-900 dark:text-ink-100"></span>"
+            </div>
+
+            <div x-show="filteredOptions.length === 0 && (!writable || !searchTerm)" class="px-3 py-2 text-sm text-ink-500 dark:text-ink-400 text-center">
+                No options found
+            </div>
+        </div>
+    </div>
+
+    <select x-ref="hiddenSelect" :name="name" multiple {{ attrs }} class="hidden">
+        <template x-for="tag in tags" :key="tag">
+            <option :value="tag" selected x-text="tag"></option>
+        </template>
+    </select>
+</div>
+{% endset %}
+
+{% if label or description or description_trailing or error %}
+<ui.field label="{{ label }}" description="{{ description }}" description_trailing="{{ description_trailing }}" error="{{ error }}" badge="{{ badge }}" name="{{ name }}">
+    {{ combobox_body }}
+</ui.field>
+{% else %}
+{{ combobox_body }}
+{% endif %}

@@ -1,0 +1,61 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Behavior `dropdownMenu`
+   du bundle vendorisé. `trigger` est un named slot (`<ui-slot name="trigger">`)
+   ou une prop ; sans lui, `trigger_text` génère un bouton automatique. #}
+{% uivars position="bottom" align="start" offset="4" trigger_text="" min_width="12rem" auto_position=true collapsible=false trigger="" %}
+<div
+  x-data="dropdownMenu()"
+  x-init="position = '{{ position }}'; align = '{{ align }}'; offset = {{ offset }}; responsive = {{ "true" if auto_position else "false" }}; collapsible = {{ "true" if collapsible else "false" }} || !!$root.closest('[data-dropdown-collapse]'); $watch('dropdownMenu', value => { if (value) positionDropdown() })"
+  x-bind="root"
+  @dropdown-close="close()"
+  {{ attrs }}
+  class="relative inline-block">
+
+  {% if trigger %}
+    <div x-ref="trigger" x-bind="trigger">
+      {{ trigger }}
+    </div>
+  {% elif trigger_text %}
+    <button
+      type="button"
+      x-ref="trigger"
+      x-bind="trigger"
+      class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
+             rounded-control border transition-colors
+             border-ink-300 dark:border-ink-700
+             bg-ink-50 dark:bg-ink-800
+             text-ink-700 dark:text-ink-300
+             hover:bg-ink-100 dark:hover:bg-ink-700
+             focus-ring"
+      :class="{ 'ring-[length:var(--focus-ring-width)] ring-[var(--focus-ring-color)]': dropdownMenu }"
+      aria-haspopup="true"
+      :aria-expanded="dropdownMenu">
+      {{ trigger_text }}
+      <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': dropdownMenu }"
+           fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+  {% else %}
+    <div class="text-red-500 text-sm">Error: Dropdown requires either 'trigger' slot or 'trigger_text' prop</div>
+  {% endif %}
+
+  <div
+    x-ref="content"
+    x-bind="content"
+    x-cloak
+    class="z-50 rounded-control border shadow-lg
+           border-[color:var(--color-box-border)]
+           bg-white dark:bg-ink-900
+           max-h-[calc(100vh-4rem)] sm:max-h-[80vh]
+           overflow-y-auto overflow-x-hidden
+           scrollbar-thin scrollbar-thumb-ink-400 scrollbar-track-ink-100
+           dark:scrollbar-thumb-ink-600 dark:scrollbar-track-ink-800"
+    :class="collapsible
+              ? 'static md:absolute w-full min-w-0 md:w-auto md:min-w-[var(--dd-min)] mt-1 md:mt-0'
+              : 'absolute min-w-[var(--dd-min)]'"
+    style="--dd-min: {{ min_width }}"
+    role="menu"
+    aria-orientation="vertical">
+    {{ slot }}
+  </div>
+</div>

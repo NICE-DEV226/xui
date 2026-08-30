@@ -61,28 +61,33 @@ class Plugin(TrustedBase):
     def get_router(self) -> APIRouter:
         router = APIRouter()
 
+        def _engine():
+            return self.get_service("ext.template_engine").engine
+
         @router.get("/login", response_class=HTMLResponse)
-        async def login_form(next: str = "/plugins/crm_app/contacts"):
-            return HTMLResponse(f"""
-                <!doctype html><html><body style="font-family:system-ui;max-width:320px;margin:3rem auto">
-                <h1>Connexion</h1>
-                <form method="post" action="/plugins/demo_auth/login" style="display:flex;flex-direction:column;gap:.5rem">
-                  <input type="hidden" name="next" value="{next}">
-                  <label>Utilisateur<input name="username"></label>
-                  <label>Mot de passe<input name="password" type="password"></label>
-                  <button type="submit">Se connecter</button>
-                </form>
-                <p>Comptes de démo : <code>alice/alice123</code> (sales.view + sales.create),
-                <code>bob/bob123</code> (sales.view seul).</p>
-                </body></html>
-            """)
+        async def login_form(request: Request, next: str = "/plugins/crm_app/contacts"):
+            html = await _engine().render(
+                "login.html",
+                {"user": None, "nav": [], "request": request, "next": next},
+            )
+            return HTMLResponse(html)
 
         @router.post("/login")
         async def login_submit(request: Request):
             form = await request.form()
             session_id = self._backend.login(str(form.get("username", "")), str(form.get("password", "")))
             if not session_id:
-                return HTMLResponse("<p>Identifiants invalides</p>", status_code=401)
+                html = await _engine().render(
+                    "login.html",
+                    {
+                        "user": None,
+                        "nav": [],
+                        "request": request,
+                        "next": str(form.get("next") or "/plugins/crm_app/contacts"),
+                        "error": "Identifiants invalides.",
+                    },
+                )
+                return HTMLResponse(html, status_code=401)
             next_path = str(form.get("next") or "/plugins/crm_app/contacts")
             response = RedirectResponse(next_path, status_code=303)
             response.set_cookie("session", session_id, httponly=True, samesite="lax")

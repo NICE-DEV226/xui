@@ -1,0 +1,25 @@
+{# Layout application (shell) : colonne latérale de navigation sticky + zone
+   principale avec l'en-tête de page de layouts/page.html.
+
+   Usage :
+       {% extends "layouts/app.html" %}
+       {% block sidebar %}...liens...{% endblock %}
+       {% block page_content %}...{% endblock %}
+
+   Le `topnav` de base reste visible (nav du kernel) ; la sidebar sert la
+   navigation propre au module du plugin. #}
+{% extends "layouts/page.html" %}
+
+{% block content %}
+<div class="app-shell">
+  <aside class="app-side">
+    {% block sidebar %}{% endblock %}
+  </aside>
+  <div class="app-body">
+    {{ self.page_header() }}
+    <main class="page-main">
+      {% block page_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{# Réimplémentation fonctionnelle — un input natif type="radio" fait DÉJÀ la
+   navigation clavier flèches/roving-tabindex nativement (le navigateur s'en
+   charge pour un groupe de même `name`), donc pas besoin de la réécrire en
+   JS. Inspiré de django-cotton-ui (MIT, Will Abbott) dans l'esprit de l'API. #}
+{% uivars value="" label="" description="" name="" checked=false disabled=false class="" %}
+<label class="flex items-start gap-3 cursor-pointer focus-ring {% if disabled %}opacity-50 cursor-not-allowed{% endif %} {{ class }}">
+    <input
+        type="radio"
+        name="{{ name }}"
+        value="{{ value }}"
+        {% if checked %}checked{% endif %}
+        {% if disabled %}disabled{% endif %}
+        {{ attrs }}
+        class="mt-0.5 size-4 border-2 border-ink-300 dark:border-ink-600 text-accent focus:ring-accent"
+    />
+    {% if slot %}
+        {{ slot }}
+    {% elif label %}
+        <div class="flex-1">
+            <div class="font-medium text-ink-900 dark:text-ink-100">{{ label }}</div>
+            {% if description %}<div class="text-sm text-ink-600 dark:text-ink-400 mt-1">{{ description }}</div>{% endif %}
+        </div>
+    {% endif %}
+</label>

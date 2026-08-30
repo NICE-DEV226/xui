@@ -95,6 +95,11 @@ def mount_xui_page(
     `nav` (l'arbre de `NavRegistry` filtré par les rôles de l'utilisateur
     courant) est injecté automatiquement dans le contexte de template, sans
     que chaque vue ait à le recalculer.
+
+    C'est la seule entrée de xui qui exige xcore à l'appel (pas à l'import) :
+    `_resolve_user` est importé paresseusement depuis `xcore.kernel.api.rbac`
+    à l'intérieur de la fonction. Le reste du SDK (composants, CSRF, forms,
+    mounts statics) fonctionne sans xcore.
     """
     from xcore.kernel.api.rbac import _resolve_user  # même résolveur que get_current_user
 
@@ -119,6 +124,18 @@ def mount_xui_page(
             return RedirectResponse(result.path, status_code=result.code)
 
         return await render_xui_template(engine, template, plugin_ctx, request, user, extra=result)
+
+
+def mount_builtin_assets(app: "FastAPI", url_prefix: str = "/xui-static") -> None:
+    """Sert les assets statiques livrés avec le SDK (`xui/static/` — CSS/JS
+    vendorés pour les composants `<ui.x>` du package, voir
+    `xui/static/cotton-ui/NOTICE.md`). Un seul appel au niveau app, comme
+    `mount_template_static` de microframe pour les assets du projet
+    consommateur ; les deux coexistent sous des préfixes différents.
+    """
+    static_dir = Path(__file__).parent / "static"
+    if static_dir.is_dir():
+        app.mount(url_prefix, StaticFiles(directory=str(static_dir)), name="xui-static")
 
 
 def mount_plugin_static(router: APIRouter, static_dir: Path, url_path: str = "/static") -> None:

@@ -1,0 +1,61 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). Bouton déclencheur du
+   select riche — `x-ref="trigger"` attendu par `menu.html`. #}
+{% uivars placeholder="Select an option" size="md" %}
+{% set size_classes = {
+    'xs': 'text-xs px-2 py-1',
+    'sm': 'text-sm px-3 py-1.5',
+    'md': 'text-sm px-3 py-2',
+    'lg': 'text-base px-4 py-2.5',
+    'xl': 'text-lg px-5 py-3',
+    '2xl': 'text-xl px-6 py-3.5'
+} %}
+<button
+    type="button"
+    x-ref="trigger"
+    @click="toggle()"
+    @focus="focused = true"
+    @blur="focused = false"
+    :disabled="disabled"
+    {{ attrs }}
+    class="flex items-center text-left justify-between w-full rounded-control border transition-colors
+           {{ size_classes[size] }}
+           bg-[var(--color-input-bg)]
+           border-ink-300 dark:border-ink-700
+           focus:outline-none
+           disabled:opacity-50 disabled:cursor-not-allowed"
+    :class="{ 'ring-[length:var(--focus-ring-width)] ring-[var(--focus-ring-color)]': open || focused }"
+    :style="(open || focused) ? { borderColor: 'var(--color-accent)' } : {}"
+>
+    <div class="flex items-center gap-3 flex-1 min-w-0">
+        <span
+            x-show="selectedOption?.icon"
+            class="flex-shrink-0 w-5 h-5 text-ink-400 dark:text-ink-500"
+            x-html="selectedOption?.icon"
+            style="display: none;"
+        ></span>
+
+        <div class="flex-1 min-w-0">
+            <span
+                class="truncate block"
+                :class="{ 'text-ink-500 dark:text-ink-400': !selected }"
+                x-text="selectedLabel || '{{ placeholder }}'"
+            ></span>
+            <span
+                x-show="selectedOption?.description"
+                class="text-xs text-ink-500 dark:text-ink-400 truncate block"
+                x-text="selectedOption?.description"
+                style="display: none;"
+            ></span>
+        </div>
+    </div>
+
+    <svg
+        class="w-4 h-4 ml-2 text-ink-400 transition-transform flex-shrink-0"
+        :class="{ 'rotate-180': open }"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+    >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+</button>

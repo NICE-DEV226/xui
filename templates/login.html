@@ -1,0 +1,25 @@
+{# Login de démo — illustre layouts/auth.html (étend base.html sans nav,
+   carte centrée). @todo : passé sous CSRF en protégeant /plugins. #}
+{% extends "layouts/auth.html" %}
+
+{% block auth_title %}Connexion{% endblock %}
+{% block auth_subtitle %}<p class="page-subtitle">Comptes de démo :
+<code>alice/alice123</code> (sales.view + sales.create),
+<code>bob/bob123</code> (sales.view seul).</p>{% endblock %}
+
+{% block auth_content %}
+{% if error %}<ui.alert variant="error" title="Connexion refusée" class="mb-4">{{ error }}</ui.alert>{% endif %}
+<form method="post" action="/plugins/demo_auth/login" class="space-y-4">
+  <input type="hidden" name="next" value="{{ next|default('/plugins/crm_app/contacts') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="space-y-1.5">
+    <ui.label for_="username">Utilisateur</ui.label>
+    <ui.input id="username" name="username" autofocus required class="w-full"/>
+  </div>
+  <div class="space-y-1.5">
+    <ui.label for_="password">Mot de passe</ui.label>
+    <ui.input id="password" name="password" type="password" required class="w-full"/>
+  </div>
+  <ui.button type="submit" variant="primary" class="mt-2">Se connecter</ui.button>
+</form>
+{% endblock %}

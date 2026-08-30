@@ -26,6 +26,19 @@ from xui.forms import parse_form
 from xui.mount import mount_plugin_static, mount_xui_page, render_xui_template
 from xui.nav import NavNode
 from xui.nav import registry as nav_registry
+from xui.packages import registry as ui_packages
+
+_UI_KIT_PACKAGE = "com.xcore.ui_kit"
+
+
+def _ui_kit_exports() -> dict:
+    # Résolu ici, à chaque rendu — jamais mis en cache au niveau module : une
+    # référence prise à l'import serait périmée après un hot-reload de
+    # ui_kit (voir la règle documentée dans xui/packages.py).
+    return {
+        "ui_button": ui_packages.get(_UI_KIT_PACKAGE, "button"),
+        "ui_badge": ui_packages.get(_UI_KIT_PACKAGE, "badge"),
+    }
 
 # PluginContext n'expose pas plugin_dir (absent du vrai xcoreruntime installé
 # — voir docs/spec-v1.md §3) : chaque plugin qui a besoin de son propre
@@ -49,6 +62,7 @@ def _contacts_view(ctx: UIContext):
         "title": "Contacts",
         "contacts": _CONTACTS,
         "can_create": ctx.has_role("sales.create"),
+        **_ui_kit_exports(),
     }
 
 
@@ -84,7 +98,7 @@ class Plugin(TrustedBase):
         )
 
         @router.post("/contacts/new")
-        async def create_contact(request: Request, user=Depend(_resove_user)):
+        async def create_contact(request: Request):
             from xcore.kernel.api.rbac import _resolve_user
 
             try:
@@ -113,6 +127,7 @@ class Plugin(TrustedBase):
                         "can_create": True,
                         "errors": result.errors,
                         "values": result.values,
+                        **_ui_kit_exports(),
                     },
                     status_code=422,
                 )
