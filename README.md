@@ -2,8 +2,6 @@
 
 > Server-rendered UI SDK for XCore plugins.
 
->  **XCore provides the runtime. Plugins provide the functionality. XUI provides the UI.**
-
 
 **xui** est un SDK de pages web server-rendues pour les plugins
 [xcore](https://pypi.org/project/xcoreruntime/) : un kit de 50 composants
