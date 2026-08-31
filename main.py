@@ -33,6 +33,7 @@ from microframe.engine.integration.xcore import mount_template_static
 from xui.csrf import CSRFMiddleware
 from xui.mount import mount_builtin_assets
 from xui.nav import registry as nav_registry
+from xui.security import SecurityHeadersMiddleware
 
 xcore = Xcore(config_path="integration.yaml")
 
@@ -57,6 +58,11 @@ app.add_middleware(
     get_token=lambda: _engine().csrf_token,
     protected_paths=["/plugins/crm_app"],
 )
+
+# CSP souple en Report-Only pour la démo (xui/security.py) : pas de bloquage
+# tant que les blocs inline (styles du layout, enregistrement alpine:init)
+# ne sont pas externalisés — voir le TODO durcissement dans xui/security.py.
+app.add_middleware(SecurityHeadersMiddleware, report_only=True)
 
 xcore.setup(app)  # middlewares kernel — avant le démarrage, jamais dans lifespan()
 

@@ -1,7 +1,8 @@
 # Intégrer xui dans un plugin xcore
 
-Guide, basé sur les plugins de référence/démo du repo (`plugins/crm_app`,
-`plugins/demo_auth`, `plugins/ui_kit`, `plugins/spa_demo`).
+Guide autonome : extraits à copier/coller dans le `src/main.py` d'un plugin
+(`Plugin(TrustedBase)`, `get_router()`), adaptés de ce que faisaient les
+plugins de démo retirés du repo.
 
 ## Structure d'un plugin avec UI
 
@@ -46,7 +47,7 @@ def _contacts_view(ctx: UIContext):
     }
 ```
 
-Dans `get_router()` :
+Dans `get_router()` (app démo = `main.py`, plugin = `src/main.py`) :
 
 ```python
 def get_router(self) -> APIRouter:
@@ -65,9 +66,8 @@ def get_router(self) -> APIRouter:
     return router
 ```
 
-- `template` est résolu dans le namespace du plugin (l'extension
-  `template_engine` voit `crm → plugins/crm_app/templates` via `namespaceS`
-  d'`integration.yaml`).
+- `template` est résolu dans un namespace déclaré pour le plugin dans
+  `integration.yaml` (ex. `crm → plugins/crm_app/templates`).
 - `mount_xui_page` gère : `_resolve_user` → `UIContext` → `view` → rendu ;
   intercepte `UIPermissionDenied` (anonyme → 303 `/login?next=…`, sinon
   403), `UIRedirect` → RedirectResponse.
@@ -98,9 +98,9 @@ async def create_contact(request: Request):
 ```
 
 Le **CSRF** de cette route est validé en amont par `xui.csrf.CSRFMiddleware`
-(câblé dans `main.py` sur le préfixe `/plugins/crm_app`) — une seule source
-de vérité. Le formulaire porte le token via `{{ csrf_token() }}` dans un
-champ caché.
+(câblé dans `main.py` sur le préfixe du plugin, ex. `/plugins/crm_app`) —
+une seule source de vérité. Le formulaire porte le token via
+`{{ csrf_token() }}` dans un champ caché.
 
 ### 3. Template
 
@@ -158,7 +158,7 @@ Le plugin exporteur déclare un `package_id` et enregistre des callables
 **à `on_load()`** :
 
 ```python
-# plugins/ui_kit
+# plugin exportateur (ex. un "ui_kit")
 PACKAGE_ID = "com.xcore.ui_kit"
 
 async def on_load(self):
@@ -183,7 +183,7 @@ premier accès manquant.
 
 ## Auth de démo
 
-`plugins/demo_auth` fournit un `AuthBackend` en mémoire (comptes
+Un plugin `demo_auth` fournit un `AuthBackend` en mémoire (comptes
 `alice/alice123` et `bob/bob123`) pour exercer le flux cookie authentifié :
 `register_auth_backend(backend)` dans `on_load()`, sessions via cookie
 `session`, routes login/logout. Remplacer ce plugin ne change rien à
@@ -217,7 +217,8 @@ Rappel de l'ordre correct (voir `docs/architecture.md`) :
 ```python
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(CSRFMiddleware, get_token=lambda: _engine().csrf_token,
-                   protected_paths=["/plugins/crm_app"])
+                   protected_paths=["/plugins/<plugin>"])
+app.add_middleware(SecurityHeadersMiddleware, report_only=True)  # CSP souple (xui/security.py)
 xcore.setup(app)   # avant le démarrage
 ```
 
@@ -234,15 +235,18 @@ commentaire HTML, sans casser la page). `TemplateEngine` instancie ce client
 (`engine.mfe`, timeout réglable via config), mais **rien ne l'enregistre** :
 le registre démarre vide, et ni xui ni un plugin ne l'alimentent. `xui/`
 n'expose volontairement pas de helper MFE tant que ce besoin n'est pas acté
-(voir la question ouverte en fin de `docs/architecture.md`) — un plugin qui
-veut un fragment peut pour l'instant opter pour une **route de fragment
-dédiée** (§ ci-dessous), conforme à la spec §6.
+(voir la section MFE de `docs/architecture.md`) — un plugin qui veut un
+fragment peut pour l'instant opter pour une **route de fragment dédiée**
+(§ ci-dessous, spec §6).
 
 ## Checklist sécurité
 
 - **Tenant** : jamais lu du body — `request.state.tenant_id` (TenantMiddleware).
 - **CSRF** : actif sur tout chemin cookie-authentifié mutatif ; formulaire
   avec `{{ csrf_token() }}` caché ; jamais sur les routes Bearer-only.
+- **Headers** : `SecurityHeadersMiddleware` (`xui/security.py`) pose CSP
+  (souple par défaut en report-only), nosniff, `X-Frame-Options: DENY`,
+  Referrer-Policy — durcir (`report_only=False`) en prod.
 - **RBAC** : un seul chemin (`_resolve_user`) entre XUI et API.
 - **Fragments** : une route dédiée par fragment, un `fetch()` écrit par le
   plugin — pas de mécanisme générique (§6).

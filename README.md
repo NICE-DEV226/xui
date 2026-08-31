@@ -54,6 +54,7 @@ rendues par le serveur — rapides à écrire, inséparables de la logique méti
 | **Navigation cross-plugin** | `NavRegistry` : chaque plugin enregistre ses entrées, l'arbre est filtré par les rôles de l'utilisateur |
 | **Composants partagés entre plugins** | `UIPackageRegistry` : un plugin exporte des callables UI, les autres les résolvent au rendu, sans copies |
 | **CSRF ciblé** | Middleware qui ne protège que les routes cookie-authentifiées mutatives — jamais les routes `Bearer` (pas de credential ambiant = pas de risque) |
+| **Headers / CSP souple** | `SecurityHeadersMiddleware` : nosniff, `X-Frame-Options: DENY`, Referrer-Policy, CSP en report-only par défaut, durcissable en prod |
 | **Assets auto-hébergés** | CSS + Alpine 3.17 vendorés avec le SDK : pas de CDN, version verrouillée, fonctionne hors-ligne |
 
 ## Démarrer en trois lignes
@@ -61,7 +62,7 @@ rendues par le serveur — rapides à écrire, inséparables de la logique méti
 ```bash
 uv pip install -e ../microframe && uv sync --extra xcore
 uv run uvicorn main:app --reload     # → http://localhost:8000
-uv run pytest                        # → 42 tests
+uv run pytest                        # → 47 tests
 ```
 
 > Le paquet PyPI `microframe` est un numpy sans rapport (collision de nom) —

@@ -31,6 +31,7 @@ from .mount import (
     mount_xui_page,
     render_xui_template,
 )
+from .security import DEFAULT_CSP, SecurityHeadersMiddleware
 
 # Composants <ui.x> livrés avec le SDK (xui/components/*.html — voir
 # NOTICE.md dans ce dossier pour leur provenance). Enregistrés à l'import de
@@ -54,6 +55,8 @@ __all__ = [
     "mount_dev_proxy",
     "mount_spa_or_proxy",
     "mount_builtin_assets",
+    "SecurityHeadersMiddleware",
+    "DEFAULT_CSP",
     "FormResult",
     "parse_form",
 ]

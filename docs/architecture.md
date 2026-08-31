@@ -137,7 +137,7 @@ registry = UIPackageRegistry()  # singleton de module
   ex. `com.xcore.ui_kit`) + `exports` (callables Python rendant du HTML).
 - **Règle d'usage** : `get()` se fait **au moment du rendu**, jamais à
   l'import-time du module — sinon référence périmée après un hot-reload du
-  plugin exportateur (voir `plugins/crm_app/src/main.py` → `_ui_kit_exports`).
+  plugin exportateur (pattern documenté dans `docs/plugins.md`).
 - Divergence spec : pas de vérification topo au boot (le kernel installé n'a
   pas de hook `_topo_sort` étendu UI) — `get()` échoue avec un message clair
   au premier accès manquant.
@@ -164,6 +164,29 @@ CSRFMiddleware(app, get_token: Callable[[], str], protected_paths: Sequence[str]
   `request._receive` par une closure qui les rejoue, avant `call_next` —
   sinon les routes verraient un formulaire vide.
 
+### `xui/security.py` — en-têtes de sécurité / CSP
+
+Jamais de promesse de durcissement : CSP **souple par défaut** en
+`report-only`.
+
+```python
+DEFAULT_CSP  # script/style 'self' 'unsafe-inline' (layouts + html() inline) + base-uri 'self'
+SecurityHeadersMiddleware(app, *, csp=None, report_only=True, exclude_paths=())
+```
+
+- Même exutoire que `csrf_token()` : `report_only=True` par défaut — on
+  accumule les violations en logs, on ne casse pas les pages de démo à
+  l'inline.
+- Pose toujours `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+  `Referrer-Policy: strict-origin-when-cross-origin` ; CSP via
+  `Content-Security-Policy-Report-Only`.
+- `report_only=False` → CSP stricte à activer en prod une fois les pages sans
+  inline ; `exclude_paths` pour les chemins qui ne doivent jamais porter
+  d'en-tête.
+
+Vendue optionnelle dès l'install (toujours activable sans doute d'absence) :
+testée dans `tests/test_security.py`.
+
 ### `xui/forms.py` — validation de formulaires Pydantic
 
 ```python
@@ -181,7 +204,7 @@ parse_form(form: FormData, model) -> FormResult[ModelT]
 
 ## Flux de configuration de l'app démo (`main.py`, hors SDK)
 
-Ordre sensible (documenté dans `AGENTS.md` et `xui/csrf.py`) :
+Ordre sensible (documenté dans `xui/csrf.py` et `xui/security.py`) :
 
 1. `FastAPI(lifespan=...)`.
 2. `app.add_middleware(CSRFMiddleware, ...)` **avant** le démarrage, avec un
@@ -207,6 +230,26 @@ n'est appelé nulle part, donc tout `render_mfe` retomberait sur
 `<!-- MFE 'x' not found -->`. Acté comme non-branché (pas construit par
 anticipation) ; la bascule dédiée reste la route de fragment explicite
 (`docs/plugins.md`, spec §6).
+
+## Périmètre acté hors scope
+
+Ce qui suit est **acté** (décidé, pas oublié) ; on ne construit rien par
+anticipation. Quand un cas d'usage réel l'exigera, on rouvrira l'item avec
+la spec `docs/spec-v1.md` en référence.
+
+| Élément (spec) | État | Bascule opérationnelle |
+|---|---|---|
+| WS `/plugins/{name}/live` (§11) | non construit | push server→client uniquement — ne jamais y mettre de HTML ou de décision d'auth ; le client `fetch()` la route de fragment/API pour les données. |
+| `mount_dev_proxy` WebSocket | pas de pass-through WS | HMR Vite non supporté à travers le proxy ; dev via `vite --host` sans HMR. |
+| Manifeste `ui.packages` / `ui.mode` ✓ | non consommé par le kernel installé | résolution par code : `mount_spa_or_proxy` + `UIPackageRegistry.register()` à `on_load()`. |
+| `PluginContext.plugin_dir` (§3) | gap | dériver le chemin de `__file__` (`Path(__file__).resolve().parent.parent`). |
+| Topo-sort `ui.packages` au boot (§8) | pas de hook `_topo_sort` UI | `registry.get(...)` au rendu — échec clair au premier accès manquant. |
+| `NavRegistry`/`UIPackageRegistry` wirés kernel | singletons de module | hot-reload : `unregister_plugin()` dans `on_unload()`. |
+| CSP strict (self-only) | souple par défaut (`report_only=True`) | passer `report_only=False` en prod (`xui/security.py`), durcissement quand les templates n'auront plus d'inline. |
+| MFE (`rendered_mfe`) | client branché, registre vide | route de fragment dédiée (§6) en attendant. |
+| Dispatcher `<action>`/`<remote>` (§15) | interdit | routes POST explicites + CSRF. |
+
+Lire chaque divergence dans son module ci-dessus pour le « pourquoi ».
 
 ## Moments cruciaux à retenir
 
