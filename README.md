@@ -1,13 +1,8 @@
-[![CI](https://github.com/traoreera/xui/actions/workflows/ci.yml/badge.svg)](https://github.com/NICE-DEV226/xui/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/xui.svg)](https://pypi.org/project/xui/)
-[![Python](https://img.shields.io/pypi/pyversions/xui.svg)](https://pypi.org/project/xui/)
-[![License](https://img.shields.io/github/license/NICE-DEV226/xui)](LICENSE)
+## xui — l'UI server-rendered des plugins xcore
 
 > Server-rendered UI SDK for XCore plugins.
 >  **XCore provides the runtime. Plugins provide the functionality. XUI provides the UI.**
 
-
-# xui — l'UI server-rendered des plugins xcore
 
 **xui** est un SDK de pages web server-rendues pour les plugins
 [xcore](https://pypi.org/project/xcoreruntime/) : un kit de 50 composants
