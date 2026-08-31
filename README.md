@@ -1,7 +1,11 @@
-## xui — l'UI server-rendered des plugins xcore
+<p align="center">
+  <img src="assets/xui-banner.svg" alt="xui — UI for xcore plugins" width="640">
+</p>
 
-> Server-rendered UI SDK for XCore plugins.
+<h1 align="center">xui</h1>
+<p align="center"><strong>Server-rendered UI SDK for XCore plugins.</strong></p>
 
+---
 
 **xui** est un SDK de pages web server-rendues pour les plugins
 [xcore](https://pypi.org/project/xcoreruntime/) : un kit de 50 composants
