@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="octo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#37DFA9"/>
+      <stop offset="0.55" stop-color="#2CCB99"/>
+      <stop offset="1" stop-color="#15A978"/>
+    </linearGradient>
+    <linearGradient id="xGrad" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#42E6B5"/>
+      <stop offset="1" stop-color="#1BBF87"/>
+    </linearGradient>
+    <linearGradient id="window" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F4F4F7"/>
+    </linearGradient>
+    <filter id="drop" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#000000" flood-opacity="0.38"/>
+    </filter>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+  </defs>
+
+  <!-- transparent/near-black presentation background -->
+  <rect width="1600" height="1000" rx="30" fill="#03070E"/>
+
+  <!-- very subtle glow, like the reference -->
+  <ellipse cx="805" cy="360" rx="420" ry="260" fill="#19D79D" opacity=".08" filter="url(#softGlow)"/>
+
+  <!-- ==================== MASCOT ==================== -->
+
+  <!-- Main octopus head -->
+  <path d="
+    M 458 320
+    C 432 281 430 221 456 177
+    C 490 119 557 88 642 88
+    C 731 88 800 119 833 180
+    C 861 231 856 291 829 331
+    C 807 365 776 389 731 402
+    C 676 418 574 417 520 402
+    C 493 394 475 371 458 320 Z"
+    fill="url(#octo)" stroke="#050505" stroke-width="15" stroke-linejoin="round"/>
+
+  <!-- little head highlight -->
+  <path d="M 501 140 C 526 121 549 113 565 111" fill="none"
+        stroke="#A9FFE3" stroke-width="12" stroke-linecap="round" opacity=".75"/>
+
+  <!-- Left rear tentacle -->
+  <path d="
+    M 476 332
+    C 433 324 389 342 371 378
+    C 350 419 368 466 408 484
+    C 428 493 449 493 466 481
+    C 487 465 491 443 478 420
+    C 465 395 474 369 495 352 Z"
+    fill="url(#octo)" stroke="#050505" stroke-width="15" stroke-linejoin="round"/>
+
+  <!-- Left lower tentacle -->
+  <path d="
+    M 470 401
+    C 420 392 373 408 349 449
+    C 322 494 340 542 383 559
+    C 418 573 452 556 463 528
+    C 470 509 461 490 446 477
+    C 430 463 438 437 465 425 Z"
+    fill="url(#octo)" stroke="#050505" stroke-width="15" stroke-linejoin="round"/>
+
+  <!-- Right rear tentacle -->
+  <path d="
+    M 796 333
+    C 838 315 884 324 909 355
+    C 937 391 925 434 887 456
+    C 868 467 844 462 832 445
+    C 820 428 826 410 841 394
+    C 857 377 848 354 817 350 Z"
+    fill="url(#octo)" stroke="#050505" stroke-width="15" stroke-linejoin="round"/>
+
+  <!-- Right lower tentacle -->
+  <path d="
+    M 816 404
+    C 868 393 916 414 939 454
+    C 965 499 949 548 907 565
+    C 872 579 836 560 829 531
+    C 824 508 839 493 853 478
+    C 870 460 857 435 828 430 Z"
+    fill="url(#octo)" stroke="#050505" stroke-width="15" stroke-linejoin="round"/>
+
+  <!-- Suction cups -->
+  <g fill="#118F6D" stroke="#0A735B" stroke-width="3" opacity=".95">
+    <ellipse cx="395" cy="388" rx="10" ry="13"/>
+    <ellipse cx="382" cy="425" rx="9" ry="12"/>
+    <ellipse cx="405" cy="470" rx="10" ry="13"/>
+    <ellipse cx="375" cy="503" rx="9" ry="11"/>
+    <ellipse cx="878" cy="365" rx="10" ry="12"/>
+    <ellipse cx="904" cy="398" rx="9" ry="12"/>
+    <ellipse cx="877" cy="451" rx="10" ry="12"/>
+    <ellipse cx="915" cy="481" rx="9" ry="11"/>
+    <ellipse cx="867" cy="520" rx="10" ry="12"/>
+  </g>
+
+  <!-- Eyes -->
+  <g stroke="#050505" stroke-width="12" fill="#FFFFFF">
+    <ellipse cx="575" cy="285" rx="58" ry="69"/>
+    <ellipse cx="725" cy="285" rx="58" ry="69"/>
+  </g>
+  <g fill="#0A0A0A">
+    <ellipse cx="579" cy="291" rx="34" ry="42"/>
+    <ellipse cx="729" cy="291" rx="34" ry="42"/>
+  </g>
+  <g fill="#FFFFFF">
+    <circle cx="592" cy="277" r="10"/>
+    <circle cx="742" cy="277" r="10"/>
+    <circle cx="569" cy="307" r="4.5"/>
+    <circle cx="719" cy="307" r="4.5"/>
+  </g>
+
+  <!-- Friendly smile -->
+  <path d="M 648 335 Q 665 352 683 335"
+        fill="none" stroke="#050505" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- ==================== BROWSER WINDOW ==================== -->
+
+  <g filter="url(#drop)">
+    <!-- outer dark body -->
+    <rect x="398" y="348" width="560" height="310" rx="25"
+          fill="#0D121A" stroke="#050505" stroke-width="12"/>
+    <!-- window -->
+    <rect x="411" y="360" width="534" height="280" rx="20"
+          fill="url(#window)" stroke="#080808" stroke-width="8"/>
+
+    <!-- top chrome -->
+    <path d="M411 381 Q411 360 431 360 H925 Q945 360 945 381 V410 H411 Z"
+          fill="#FAFAFA"/>
+    <line x1="411" y1="410" x2="945" y2="410"
+          stroke="#7A7D86" stroke-width="6"/>
+
+    <!-- browser controls -->
+    <g fill="#AEB2BA">
+      <circle cx="438" cy="386" r="11"/>
+      <circle cx="468" cy="386" r="11"/>
+      <circle cx="498" cy="386" r="11"/>
+    </g>
+
+    <!-- left column -->
+    <rect x="440" y="438" width="84" height="35" rx="9" fill="#31D39F"/>
+    <rect x="440" y="489" width="52" height="10" rx="5" fill="#AEB2BA"/>
+    <rect x="440" y="515" width="43" height="10" rx="5" fill="#AEB2BA"/>
+
+    <line x1="544" y1="430" x2="544" y2="625"
+          stroke="#D8DAE0" stroke-width="6"/>
+
+    <!-- right dashboard blocks -->
+    <rect x="568" y="442" width="105" height="72" rx="12" fill="#ECECF3"/>
+    <rect x="689" y="442" width="147" height="72" rx="12" fill="#ECECF3"/>
+    <rect x="568" y="535" width="105" height="72" rx="12" fill="#ECECF3"/>
+    <rect x="689" y="535" width="147" height="72" rx="12" fill="#ECECF3"/>
+  </g>
+
+  <!-- Front/right octopus tentacle hugging window -->
+  <path d="
+    M 855 455
+    C 900 439 942 451 958 479
+    C 977 515 961 552 929 571
+    C 901 587 869 580 856 557
+    C 844 536 854 516 871 501
+    C 887 486 879 468 855 455 Z"
+    fill="url(#octo)" stroke="#050505" stroke-width="15" stroke-linejoin="round"/>
+
+  <g fill="#118F6D" stroke="#0A735B" stroke-width="3">
+    <ellipse cx="916" cy="479" rx="9" ry="11"/>
+    <ellipse cx="938" cy="511" rx="8" ry="10"/>
+    <ellipse cx="919" cy="548" rx="9" ry="11"/>
+  </g>
+
+  <!-- ==================== XUI WORDMARK ==================== -->
+
+  <!-- subtle black outline -->
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="900"
+     text-anchor="middle" stroke="#050505" stroke-width="16" stroke-linejoin="round" paint-order="stroke">
+    <text x="540" y="865" font-size="250" fill="url(#xGrad)">X</text>
+    <text x="782" y="865" font-size="250" fill="#F8F8F8">U</text>
+    <text x="1000" y="865" font-size="250" fill="#F8F8F8">I</text>
+  </g>
+
+  <!-- slight inner highlight on X -->
+  <path d="M456 705 L485 676 L605 817 L575 846 Z"
+        fill="#6BF3CA" opacity=".18"/>
+
+  <!-- Tagline -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="28"
+     font-weight="700" letter-spacing="8" text-anchor="middle">
+    <text x="778" y="925" fill="#F5F6F8">
+      UI FOR <tspan fill="#2BD09C">XCORE</tspan> PLUGINS
+    </text>
+  </g>
+</svg>
