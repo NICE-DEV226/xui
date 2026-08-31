@@ -1,6 +1,7 @@
 ## xui — l'UI server-rendered des plugins xcore
 
 > Server-rendered UI SDK for XCore plugins.
+
 >  **XCore provides the runtime. Plugins provide the functionality. XUI provides the UI.**
 
 
