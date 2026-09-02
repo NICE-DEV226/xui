@@ -82,10 +82,15 @@ def mount_xui_page(
     path: str,
     template: str,
     view: PageView,
-    methods: tuple[str, ...] = ("GET",),
     login_path: str = "/login",
 ) -> None:
     """Monte UNE page server-rendue sur `path`.
+
+    Toujours GET (+ HEAD, gratuit avec) — pas de paramètre `methods` à
+    élargir par erreur (docs/XUI_EVOLUTION_ROADMAP.md §12.1 : "le rendu
+    d'une page doit rester une opération de lecture"). Une mutation reste
+    une route POST explicite déclarée à côté, jamais un `mount_xui_page`
+    avec `methods=("GET", "POST")`.
 
     `view(ctx)` reçoit un `UIContext` déjà résolu (utilisateur, services) et
     retourne soit un dict de contexte de template, soit un `UIRedirect`.
@@ -101,14 +106,11 @@ def mount_xui_page(
     à l'intérieur de la fonction. Le reste du SDK (composants, CSRF, forms,
     mounts statics) fonctionne sans xcore.
     """
-    from xcore.kernel.api.rbac import _resolve_user  # même résolveur que get_current_user
+    from .context import resolve_user_or_anonymous
 
-    @router.api_route(path, methods=list(methods), response_class=HTMLResponse)
+    @router.api_route(path, methods=["GET", "HEAD"], response_class=HTMLResponse)
     async def render_page(request: Request):
-        try:
-            user = await _resolve_user(request)
-        except Exception:
-            user = None
+        user = await resolve_user_or_anonymous(request)
 
         ui_ctx = UIContext(plugin_ctx=plugin_ctx, request=request, user=user)
         try:

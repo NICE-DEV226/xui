@@ -1,0 +1,5 @@
+name: demo_auth
+version: 0.1.0
+description: "Backend d'auth en mémoire pour la démo (comptes alice/bob) — voir docs/plugins.md."
+entry_point: src/main.py
+execution_mode: trusted

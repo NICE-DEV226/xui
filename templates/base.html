@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}XUI Demo{% endblock %}</title>
+  <ui.mode_toggle_head/>
+  <ui.xui/>
+  <ui.theme/>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="h-full bg-white dark:bg-ink-950 text-ink-900 dark:text-ink-100">
+  <div class="min-h-full flex">
+    <aside class="w-60 shrink-0 border-r border-ink-200 dark:border-ink-800 px-4 py-6">
+      <div class="font-semibold text-lg mb-6">XUI Demo</div>
+      <nav class="flex flex-col gap-1 text-sm">
+        {% macro nav_items(items) %}
+          {% for item in items %}
+            <a href="{{ item.path or '#' }}" data-xui-nav-link
+               class="block rounded-control px-3 py-2 text-ink-600 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-ink-800 hover:text-ink-900 dark:hover:text-ink-100 transition-colors [&.is-active]:bg-ink-100 dark:[&.is-active]:bg-ink-800 [&.is-active]:text-ink-900 dark:[&.is-active]:text-ink-100 [&.is-active]:font-medium">
+              {{ item.label }}
+            </a>
+            {% if item.children %}
+              <div class="ml-3 border-l border-ink-200 dark:border-ink-800 pl-2">
+                {{ nav_items(item.children) }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endmacro %}
+        {{ nav_items(nav or []) }}
+      </nav>
+    </aside>
+
+    <div class="flex-1 min-w-0">
+      <header class="flex items-center justify-end gap-3 border-b border-ink-200 dark:border-ink-800 px-6 py-3 text-sm">
+        <ui.mode_toggle/>
+        {% if user %}
+          <span class="text-ink-500 dark:text-ink-400">{{ user.sub }}</span>
+          <ui.form method="post" action="/plugins/demo_auth/logout" class="inline">
+            <button type="submit" class="text-ink-500 hover:text-ink-900 dark:hover:text-ink-100 underline">Déconnexion</button>
+          </ui.form>
+        {% else %}
+          <a href="/plugins/demo_auth/login" class="text-accent hover:underline">Connexion</a>
+        {% endif %}
+      </header>
+
+      <main id="xui-main">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <ui.xuiscript/>
+  <ui.alpine/>
+  <ui.xuiboost/>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

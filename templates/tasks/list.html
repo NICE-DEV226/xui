@@ -1,0 +1,19 @@
+{% extends "layouts/page.html" %}
+{% block title %}Tâches{% endblock %}
+{% block page_title %}Tâches{% endblock %}
+{% block page_content %}
+<ui.table>
+  <thead>
+    <tr><th>Tâche</th><th>Assigné à</th><th>Statut</th></tr>
+  </thead>
+  <tbody>
+    {% for t in tasks %}
+    <tr>
+      <td>{{ t.title }}</td>
+      <td>{{ t.assignee }}</td>
+      <td><ui.badge color="{{ styles[t.status].color }}">{{ styles[t.status].label }}</ui.badge></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</ui.table>
+{% endblock %}

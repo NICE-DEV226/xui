@@ -1,0 +1,19 @@
+/* Source du build Tailwind du PROJET (pas du kit xui — cotton-ui.css reste
+   figé/vendoré tel quel, voir xui/static/cotton-ui/NOTICE.md). Réimporte les
+   mêmes tokens (--color-ink-*, --color-accent, --radius-control...) pour que
+   les classes utilisées dans nos propres templates (base.html, layouts,
+   pages de plugin) compilent avec les mêmes valeurs que le kit.
+   Généré vers templates/static/app.css par `make css` — voir makefile. */
+@import "tailwindcss";
+@import "./xui/static/cotton-ui/cotton-ui.tokens.css";
+
+/* Même stratégie de dark mode que cotton-ui.css (vendoré, vérifié dans son
+   CSS compilé : `:where(.dark, .dark *):not(:where(.light, .light *))`) —
+   sans ça, Tailwind retombe sur `@media (prefers-color-scheme: dark)` par
+   défaut pour nos propres classes `dark:`, qui ignore alors complètement le
+   toggle Alpine (<ui.mode_toggle/>, qui ne fait que basculer .dark sur
+   <html>). Les deux CSS doivent s'accorder sur la même règle. */
+@custom-variant dark (&:where(.dark, .dark *):not(&:where(.light, .light *)));
+
+@source "./templates/**/*.html";
+@source "./xui/components/**/*.html";

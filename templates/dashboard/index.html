@@ -1,0 +1,13 @@
+{% extends "layouts/page.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_content %}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+  {% for s in stats %}
+  <ui.card>
+    <div class="text-3xl font-semibold">{{ s.value }}</div>
+    <ui.badge color="{{ s.color }}" class="mt-2">{{ s.label }}</ui.badge>
+  </ui.card>
+  {% endfor %}
+</div>
+{% endblock %}

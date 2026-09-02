@@ -1,0 +1,9 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/eliezer/devs/xui'
+mkdir -p .bin
+echo "téléchargement de tailwindcss v4.0.12 (linux-x64, binaire standalone officiel tailwindlabs)…"
+curl -sfL -o .bin/tailwindcss \
+	"https://github.com/tailwindlabs/tailwindcss/releases/download/v4.0.12/tailwindcss-linux-x64"
+chmod +x .bin/tailwindcss
+make: Leaving directory '/home/eliezer/devs/xui'
+ 

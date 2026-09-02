@@ -1,0 +1,4 @@
+{# Rendu vide si aucun thème n'a été monté (mount_theme() jamais appelé) —
+   xui_theme_url est un global Jinja2, absent => Undefined, faux en
+   contexte booléen, aucune erreur. #}
+{% if xui_theme_url %}<link rel="stylesheet" href="{{ xui_theme_url }}">{% endif %}

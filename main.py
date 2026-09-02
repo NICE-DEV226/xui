@@ -23,8 +23,8 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from xcore import Xcore
 
 from microframe import TemplateEngine
@@ -32,21 +32,24 @@ from microframe.engine.integration.xcore import mount_template_static
 
 from xui.csrf import CSRFMiddleware
 from xui.mount import mount_builtin_assets
-from xui.nav import registry as nav_registry
 from xui.security import SecurityHeadersMiddleware
+from xui.theme import mount_theme
 
 xcore = Xcore(config_path="integration.yaml")
 
 
-def _engine() -> TemplateEngine:
-    return xcore.services.get("ext.template_engine").engine
 
+
+engine: TemplateEngine = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await xcore.boot(app)
     mount_template_static(app, template_dir="templates", url_prefix="/static")
+    global engine
+    engine = xcore.services.get("ext.template_engine").engine
     mount_builtin_assets(app)  # CSS/JS des composants <ui.x> livrés avec xui
+    mount_theme(app, engine, "templates/static/theme.css")  # compilé par `make theme` depuis theme.css
     yield
     await xcore.shutdown()
 
@@ -55,38 +58,23 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CSRFMiddleware,
-    get_token=lambda: _engine().csrf_token,
-    protected_paths=["/plugins/crm_app"],
+    get_token=lambda: engine.csrf_token,
+    protected_paths=["/plugins/crm_app", "/plugins/demo_auth"],
 )
 
-# CSP souple en Report-Only pour la démo (xui/security.py) : pas de bloquage
-# tant que les blocs inline (styles du layout, enregistrement alpine:init)
-# ne sont pas externalisés — voir le TODO durcissement dans xui/security.py.
+# CSP durcie (xui/security.py) : script-src par hash+unsafe-eval documentés
+# plutôt qu'un blanket unsafe-inline, style-src scindé élément/attribut.
+# report_only=True reste le défaut prudent — passer False vérifié en local
+# sur les 7 plugins de démo, à activer ici quand prêt pour de vrai.
 app.add_middleware(SecurityHeadersMiddleware, report_only=True)
 
 xcore.setup(app)  # middlewares kernel — avant le démarrage, jamais dans lifespan()
 
 
 @app.get("/")
-async def index(request: Request):
-    """Landing de démo — rendu server-side des composants interactifs portés.
-
-    Pas de `mount_xui_page` ici (pas de plugin) : contexte de template bâti à
-    la main comme `xui.mount._base_render_context` (nav filtré par rôles,
-    utilisateur résolu par le même `_resolve_user` que le kernel)."""
-    from xcore.kernel.api.rbac import _resolve_user
-
-    try:
-        user = await _resolve_user(request)
-    except Exception:
-        user = None
-    user_roles = set(user.get("roles", [])) | set(user.get("permissions", [])) if user else set()
-    html = await _engine().render(
-        "landing.html",
-        {
-            "user": user,
-            "nav": nav_registry.tree(user_roles),
-            "request": request,
-        },
-    )
-    return HTMLResponse(html)
+async def index():
+    """`/` n'est plus qu'une redirection vers le plugin dashboard (§16, "5
+    plugins comme 1 app") : l'app unifiée démarre sur une page de plugin
+    normale, pas sur une landing hors-plugin. La landing marketing
+    (`templates/landing.html`) reste un chantier séparé, pas encore fait."""
+    return RedirectResponse("/plugins/dashboard/", status_code=303)

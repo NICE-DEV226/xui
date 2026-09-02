@@ -1,0 +1,5 @@
+name: ui_kit
+version: 0.1.0
+description: "Vocabulaire de statuts partagé (couleur+libellé) — démonstration UIPackageRegistry (docs/spec-v1.md §8)."
+entry_point: src/main.py
+execution_mode: trusted

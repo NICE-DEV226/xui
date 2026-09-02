@@ -1,0 +1,40 @@
+{% extends "layouts/page.html" %}
+{% block title %}Guide plugin — xui{% endblock %}
+{% block page_title %}Guide plugin{% endblock %}
+{% block page_content %}
+<div class="max-w-2xl space-y-6 text-sm text-ink-600 dark:text-ink-300">
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Pages (mode xui)</h2>
+  <p>Déclarer via <code>xui.urls.path</code> + <code>mount_xui_pages</code> plutôt que des appels <code>mount_xui_page</code> répétés — voir <a href="/plugins/docs_site/demarrage" class="text-accent hover:underline">Démarrage</a>.</p>
+</ui.card>
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Mutation = route POST explicite</h2>
+  <p>Jamais de dispatcher (<code>&lt;action&gt;</code>/<code>&lt;remote&gt;</code> interdit, §15). <code>xui.forms.parse_form</code> valide via Pydantic et ré-affiche les erreurs par champ. Le CSRF passe par <code>&lt;ui.form&gt;</code>, jamais un champ caché écrit à la main.</p>
+</ui.card>
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">RBAC unifié</h2>
+  <p><code>ctx.require_role("role")</code> côté page, <code>Depends(RBACChecker(["role"]))</code> côté API pure — même <code>AuthPayload</code>, résolu par la même fonction (<code>_resolve_user</code>). Aucune réimplémentation.</p>
+</ui.card>
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Navigation cross-plugin</h2>
+  <p><code>nav_registry.register(NavNode(...))</code> dans <code>on_load()</code>, <code>unregister_plugin()</code> dans <code>on_unload()</code>. L'arbre filtré par rôles est injecté automatiquement dans le contexte — pas de recalcul dans la vue.</p>
+</ui.card>
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Packages UI cross-plugin</h2>
+  <p>Un plugin exporteur (<code>plugins/ui_kit</code>, un vrai exemple du repo) enregistre ses exports à <code>on_load()</code> ; le consommateur déclare <code>requires: [exportateur]</code> dans son <code>plugin.yaml</code> — le kernel garantit l'ordre de chargement, vérifié en pratique (chargement par vagues).</p>
+</ui.card>
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Mode SPA — zéro dépendance xui</h2>
+  <p>Un plugin React/Vue/Svelte n'importe jamais xui (§14) : <code>mount_spa_or_proxy(router, dist_dir=..., dev_server=...)</code> suffit, routes API déclarées avant le fallback.</p>
+</ui.card>
+
+<p>Détail complet, exemples de code intégraux : <code>docs/plugins.md</code> dans le repo.</p>
+
+</div>
+{% endblock %}

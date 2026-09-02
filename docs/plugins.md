@@ -47,30 +47,39 @@ def _contacts_view(ctx: UIContext):
     }
 ```
 
-Dans `get_router()` (app démo = `main.py`, plugin = `src/main.py`) :
+Dans `get_router()` (app démo = `main.py`, plugin = `src/main.py`) — un
+plugin à une seule page peut appeler `mount_xui_page` directement, mais dès
+qu'il y en a plusieurs, `xui.urls` évite de répéter `ctx`/`engine`/
+`login_path` à chaque route (façon `django.urls.path()`, sans dispatcher :
+`mount_xui_pages` déroule la liste UNE FOIS au montage, chaque route reste
+un `mount_xui_page` normal, FastAPI route comme d'habitude) :
 
 ```python
+from xui.urls import path as xui_path, mount_xui_pages, reverse
+
+urlpatterns = [
+    xui_path("/contacts", _contacts_view, template="crm/contacts.html", name="crm.contacts"),
+]
+
 def get_router(self) -> APIRouter:
     router = APIRouter()
     engine = self.get_service("ext.template_engine").engine  # engine partagé
 
     mount_plugin_static(router, _PLUGIN_DIR / "static")
-
-    mount_xui_page(
-        router, self.ctx, engine,
-        path="/contacts",
-        template="crm/contacts.html",
-        view=_contacts_view,
-        login_path="/plugins/demo_auth/login",
-    )
+    mount_xui_pages(router, self.ctx, engine, urlpatterns, login_path="/plugins/demo_auth/login")
     return router
 ```
 
-- `template` est résolu dans un namespace déclaré pour le plugin dans
-  `integration.yaml` (ex. `crm → plugins/crm_app/templates`).
-- `mount_xui_page` gère : `_resolve_user` → `UIContext` → `view` → rendu ;
-  intercepte `UIPermissionDenied` (anonyme → 303 `/login?next=…`, sinon
-  403), `UIRedirect` → RedirectResponse.
+- `template` est résolu dans le `directory` du `template_engine` (ou un
+  `namespaces` déclaré dans `integration.yaml` si le plugin veut isoler ses
+  propres templates).
+- `mount_xui_page`/`mount_xui_pages` gèrent : `_resolve_user` → `UIContext`
+  → `view` → rendu ; interceptent `UIPermissionDenied` (anonyme → 303
+  `/login?next=…`, sinon 403), `UIRedirect` → RedirectResponse.
+- `name="crm.contacts"` alimente `reverse("crm.contacts")` → `/plugins/crm_app/contacts`
+  (équivalent minimal de `django.urls.reverse()`, pas de segments
+  dynamiques pour l'instant) — collision de nom détectée à `mount_xui_pages()`,
+  remonter les mêmes `urlpatterns` deux fois (hot-reload) est sans effet.
 
 ### 2. Mutation = route POST explicite
 
@@ -79,9 +88,8 @@ Jamais de dispatcher (`<action>`/`<remote>` est interdit, spec §15) :
 ```python
 @router.post("/contacts/new")
 async def create_contact(request: Request):
-    from xcore.kernel.api.rbac import _resolve_user
-    user = await _resolve_user(request)          # même mécanisme que get_current_user
-    ctx = UIContext(plugin_ctx=self.ctx, request=request, user=user)
+    user = await resolve_user_or_anonymous(request)  # jamais un except Exception: user = None —
+    ctx = UIContext(plugin_ctx=self.ctx, request=request, user=user)  # voir plus bas pourquoi
     if not ctx.has_role("sales.create"):
         return RedirectResponse("/plugins/crm_app/contacts", status_code=303)
 
@@ -99,8 +107,19 @@ async def create_contact(request: Request):
 
 Le **CSRF** de cette route est validé en amont par `xui.csrf.CSRFMiddleware`
 (câblé dans `main.py` sur le préfixe du plugin, ex. `/plugins/crm_app`) —
-une seule source de vérité. Le formulaire porte le token via
-`{{ csrf_token() }}` dans un champ caché.
+une seule source de vérité. Le formulaire porte le token via `<ui.form>`
+(§10), qui l'injecte automatiquement : pas de
+`<input type="hidden" name="csrf_token">` à écrire à la main.
+
+**Pourquoi `resolve_user_or_anonymous` et pas `try: ... except Exception: user = None`**
+(vu deux fois dans ce repo avant correctif) : `_resolve_user` peut lever un
+`503` si le backend d'auth n'est pas chargé — une vraie panne, pas un
+visiteur anonyme. Un `except Exception` généralisé les confond toutes les
+deux en `user = None`, rendant la panne invisible (elle se comporte comme
+"non connecté" au lieu de remonter comme erreur serveur). `xui.context.resolve_user_or_anonymous`
+ne convertit en anonyme que le `401` (token absent/invalide/expiré,
+légitimement anonyme) — tout le reste remonte tel quel
+(docs/XUI_EVOLUTION_ROADMAP.md §12.2).
 
 ### 3. Template
 
@@ -114,15 +133,20 @@ Le template étend le layout partagé et met les composants au travail :
 {% endblock %}
 {% block page_content %}
   <ui.table>…contacts…</ui.table>
-  <form method="post" action="/plugins/crm_app/contacts/new">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <ui.form action="/plugins/crm_app/contacts/new">
     <ui.input name="name" label="Nom" value="{{ values.get('name', '') }}"/>
-    {% if errors.get('name') %}<ui.error name="name" message="{{ errors.get('name') }}"/>{% endif %}
+    {% if errors.get('name') %}<ui.error message="{{ errors.get('name') }}"/>{% endif %}
     <ui.button type="submit" variant="primary">Créer</ui.button>
-  </form>
+  </ui.form>
 {% endblock %}
 {% block scripts %}<ui.alpine/>{% endblock %}
 ```
+
+`<ui.form>` (`xui/components/form.html`) injecte le champ caché
+`csrf_token` lui-même (sauf sur `method="get"`, rien à protéger) via
+`csrf_token()` comme global Jinja2 — accessible même si le composant est
+rendu depuis une template isolée (voir `docs/architecture.md`, "Composants
+`<ui.x>`"). `method="post"` est son défaut, inutile de le répéter.
 
 ## RBAC unifié
 
@@ -152,34 +176,68 @@ L'arbre (`nav_registry.tree(user_roles)`) est injecté automatiquement dans le
 contexte de template par `mount_xui_page` / `render_xui_template` — pas de
 recalcul dans la vue. Utilisé par le `<nav>` de `templates/base.html`.
 
+### Navigation sans rechargement complet (`<ui.xuiboost/>`)
+
+Posé une fois dans `templates/base.html` (`xui/static/xui-boost.js`) : il
+intercepte les clics sur les liens internes marqués `data-xui-nav-link`,
+fait un `fetch()` vers la **même route réelle** qu'un clic normal aurait
+suivie, extrait `#xui-main` de la réponse et remplace juste ce nœud —
+sidebar/header ne bougent pas, l'URL se met à jour via
+`history.pushState(..., res.url)` (suit les redirections : un lien vers une
+page protégée pendant qu'on est déconnecté affiche bien `/login`, pas
+l'ancienne URL). Aucune route n'existe pour ce mécanisme spécifiquement —
+sans JS (ou si le `fetch()` échoue), le lien redevient une navigation
+normale. Toujours conforme à §15 : c'est le navigateur qui ferait le même
+GET, juste demandé par `fetch()` plutôt qu'un clic direct.
+
+Un plugin avec son propre layout n'a qu'à ne pas inclure `<ui.xuiboost/>`.
+
 ## Packages UI cross-plugin
 
-Le plugin exporteur déclare un `package_id` et enregistre des callables
-**à `on_load()`** :
+Le plugin exporteur déclare un `package_id` et enregistre ses exports
+**à `on_load()`** — exemple réel du repo (`plugins/ui_kit`), un vocabulaire
+de statuts (couleur+libellé) partagé entre `billing` et `tasks` plutôt que
+dupliqué dans chacun :
 
 ```python
-# plugin exportateur (ex. un "ui_kit")
-PACKAGE_ID = "com.xcore.ui_kit"
+# plugins/ui_kit/src/main.py — export-only, aucune route propre
+PACKAGE_ID = "xui.ui_kit"
+STATUS_STYLES = {"paid": {"color": "emerald", "label": "Payée"}, ...}
 
-async def on_load(self):
-    ui_packages.register(PACKAGE_ID, self.ctx.name, {"button": button, "badge": badge})
+class Plugin(TrustedBase):
+    async def on_load(self) -> None:
+        ui_packages.register(PACKAGE_ID, self.ctx.name, {"status_styles": STATUS_STYLES})
+
+    async def on_unload(self) -> None:
+        ui_packages.unregister_plugin(self.ctx.name)
 ```
 
-Le consommateur résout **au moment du rendu** (jamais à l'import du module) :
+Le consommateur résout **au moment du rendu**, jamais à l'import du module
+(une référence prise à l'import serait périmée après un hot-reload de
+l'exportateur) :
 
 ```python
-def _ui_kit_exports() -> dict:
-    return {
-        "ui_button": ui_packages.get("com.xcore.ui_kit", "button"),
-        "ui_badge":  ui_packages.get("com.xcore.ui_kit", "badge"),
-    }
+# plugins/billing/src/main.py
+def _invoices_view(ctx: UIContext):
+    ctx.require_role("billing.view")
+    styles = ui_packages.get("xui.ui_kit", "status_styles")  # inline, dans la vue
+    return {"invoices": _INVOICES, "styles": styles}
 ```
 
-Règle : toujours `registry.get(...)` inline dans la vue/le rendu — une
-référence prise à l'import serait périmée après un hot-reload de
-l'exportateur. Pas de résolution au boot (le kernel installé n'a pas le hook
-`_topo_sort` UI de la spec §8) : `get()` échoue avec un message clair au
-premier accès manquant.
+```yaml
+# plugins/billing/plugin.yaml
+requires:
+  - ui_kit
+```
+
+L'ordre de chargement (`ui_kit` avant `billing`) est garanti par le
+`requires:` **du vrai kernel** (graphe de dépendances backend, générique —
+pas un hook `_topo_sort` spécifique aux packages UI comme l'imaginait la
+spec §8) : vérifié en pratique, le kernel charge par vagues successives
+(`ui_kit` d'abord, `billing`/`tasks` ensuite). `UIPackageRegistry` lui-même
+ne vérifie toujours rien au boot — c'est `requires:` qui protège
+`get()`, pas le registre — donc un exportateur oublié dans `requires:`
+échoue seulement au premier accès manquant, avec un message clair.
 
 ## Auth de démo
 
@@ -223,8 +281,51 @@ xcore.setup(app)   # avant le démarrage
 ```
 
 Et dans `lifespan()` : `await xcore.boot(app)` puis `mount_template_static`
-+ `mount_builtin_assets`. Ne jamais appeler `bind_engine()` /
-`register_action_routes()` (dispatcher interdit §15).
++ `mount_builtin_assets` (+ `mount_theme(app, engine, "templates/static/theme.css")`
+si le projet a un thème custom, voir plus bas). Ne jamais appeler
+`bind_engine()` / `register_action_routes()` (dispatcher interdit §15).
+
+### Thème custom (`xui.theme.mount_theme`)
+
+`cotton-ui.css` (vendoré, `xui/static/`) est un Tailwind v4 **pré-compilé,
+figé** — aucun build à faire pour l'utiliser tel quel, mais aussi aucune
+classe au-delà de celles déjà utilisées par les composants portés (voir
+`docs/architecture.md`). Un projet qui veut ses propres tokens
+(`--color-brand-*`, une police, des rayons différents) ou ses propres
+classes structurelles (`base.html`, layouts) a besoin d'un **vrai build
+Tailwind** — pas de Node/npm requis, le CLI standalone officiel suffit
+(`make css`/`make theme`, voir le `makefile` : télécharge
+`tailwindcss-linux-x64` depuis les releases GitHub `tailwindlabs/tailwindcss`
+si absent, checksum vérifiable via `sha256sums.txt`).
+
+```python
+mount_theme(app, engine, "templates/static/theme.css")  # sortie compilée, pas la source
+```
+
+`mount_theme` sert le fichier via une route dédiée (`FileResponse`, résolue
+par requête — pas un `StaticFiles` qui exigerait le dossier au boot) et
+enregistre son URL comme global Jinja2 (`xui_theme_url`), consommé par
+`<ui.theme/>` — un composant n'a accès à aucune variable de la page qui
+l'inclut (voir `docs/architecture.md`, "Composants `<ui.x>`"), donc un
+thème (réglage process-wide) passe par un global, pas par le contexte de
+rendu.
+
+**Piège vérifié en pratique** : `@theme { --color-x: ... }` dans la
+SOURCE ne suffit pas — Tailwind v4 élague par défaut les variables non
+référencées par une classe présente dans les fichiers scannés (`@source`).
+Sans classe qui les utilise déjà, `@theme static { ... }` force leur
+émission.
+
+**Autre piège** : le `dark:` de `cotton-ui.css` (vendoré) est **par
+classe** (`:where(.dark, .dark *):not(:where(.light, .light *))` —
+`<ui.mode_toggle/>` bascule `.dark` sur `<html>`). Un build de thème projet
+qui ne déclare pas la même règle retombe sur `@media
+(prefers-color-scheme: dark)` par défaut — les deux CSS doivent s'accorder,
+sinon le switch de thème ne change que la moitié de la page :
+
+```css
+@custom-variant dark (&:where(.dark, .dark *):not(&:where(.light, .light *)));
+```
 
 ## MFE (micro-frontends) — état actuel
 
@@ -242,11 +343,23 @@ fragment peut pour l'instant opter pour une **route de fragment dédiée**
 ## Checklist sécurité
 
 - **Tenant** : jamais lu du body — `request.state.tenant_id` (TenantMiddleware).
-- **CSRF** : actif sur tout chemin cookie-authentifié mutatif ; formulaire
-  avec `{{ csrf_token() }}` caché ; jamais sur les routes Bearer-only.
-- **Headers** : `SecurityHeadersMiddleware` (`xui/security.py`) pose CSP
-  (souple par défaut en report-only), nosniff, `X-Frame-Options: DENY`,
-  Referrer-Policy — durcir (`report_only=False`) en prod.
+- **CSRF** : actif sur tout chemin cookie-authentifié mutatif ; `<ui.form>`
+  injecte `csrf_token` automatiquement (§10) — jamais sur les routes Bearer-only.
+- **Headers** : `SecurityHeadersMiddleware` (`xui/security.py`) pose CSP,
+  nosniff, `X-Frame-Options: DENY`, Referrer-Policy. `DEFAULT_CSP` évite le
+  `'unsafe-inline'` générique sur `script-src` — un hash SHA-256 précis pour
+  l'unique `<script>` inline du kit (`mode_toggle_head`, contenu
+  déterministe) + `'unsafe-eval'` explicitement documenté (requis par
+  Alpine.js, pas de contournement sans son build CSP-friendly).
+  `style-src` scindé élément/attribut : `style-src-elem 'self'` strict
+  (aucun `<style>` nulle part dans le kit), `style-src-attr 'unsafe-inline'`
+  (beaucoup de composants calculent un `style="..."` dynamique en JS —
+  aucun mécanisme CSP ne couvre les attributs). `report_only=True` reste le
+  défaut prudent, vérifié fonctionnel en mode enforce sur les 7 plugins de
+  démo — passer `False` est un choix de posture prod pour l'app hôte, pas
+  un défaut xui. **Si un plugin ajoute `<ui.toast/>`** (son propre `<script>`
+  inline, pas encore utilisé dans ce repo) : calculer son hash et l'ajouter
+  à `DEFAULT_CSP`, sinon il casse net en mode enforce.
 - **RBAC** : un seul chemin (`_resolve_user`) entre XUI et API.
 - **Fragments** : une route dédiée par fragment, un `fetch()` écrit par le
   plugin — pas de mécanisme générique (§6).

@@ -1,0 +1,35 @@
+{% extends "layouts/page.html" %}
+{% import "docs_site/_macros.html" as m %}
+{% block title %}Composants — Système & thème — xui{% endblock %}
+{% block page_title %}Composants — Système & thème{% endblock %}
+{% block page_content %}
+
+<p class="text-ink-600 dark:text-ink-300 mb-6 max-w-2xl">
+  Ces composants ne sont pas des ports django-cotton-ui — écrits pour xui,
+  ils portent le bootstrapping du kit lui-même.
+</p>
+
+{% call m.example("ui.mode_toggle — switch clair/sombre (cette page en a un dans la topbar)") %}
+<ui.mode_toggle variant="switch"/>
+{% endcall %}
+{{ m.snippet(snippets.mode_toggle) }}
+
+{% call m.example("ui.calendar") %}
+<ui.calendar mode="single" name="rdv"/>
+{% endcall %}
+{{ m.snippet(snippets.calendar) }}
+
+<div class="mb-8">
+  <h3 class="text-sm font-medium text-ink-500 mb-2">ui.theme / ui.xuiboost — pas de rendu visuel, juste des balises</h3>
+  {{ m.snippet(snippets.theme) }}
+  {{ m.snippet(snippets.xuiboost) }}
+  <p class="text-sm text-ink-500">
+    <code>&lt;ui.xui/&gt;</code> (CSS), <code>&lt;ui.xuiscript/&gt;</code>
+    (JS behaviors du bundle) et <code>&lt;ui.alpine/&gt;</code> (Alpine
+    core) complètent la liste — tous des composants sans rendu visuel,
+    juste des balises <code>&lt;link&gt;</code>/<code>&lt;script&gt;</code>
+    dans le bon ordre. Voir <code>docs/architecture.md</code>.
+  </p>
+</div>
+
+{% endblock %}

@@ -2,7 +2,7 @@
 
 ## Provenance
 
-Les 50 fichiers `xui/components/*.html` sont des **ports** (traduction de
+La plupart des 57 fichiers `xui/components/*.html` sont des **ports** (traduction de
 syntaxe, pas copies d'octets) d'un sous-ensemble de
 [django-cotton-ui](https://github.com/wrabit/django-cotton-ui) (MIT © Will
 Abbott). Conventions de port : `<c-vars>` → `{% uivars %}`, `|get_item:x` →
@@ -53,13 +53,14 @@ qu'Alpine core ; les behaviors du bundle (`accordion`, `dropdownMenu`,
 servable aussi sur un plugin SPA pur (cf. `docs/plugins.md`).
 
 Restent exclus du port : `composer`, `theme_builder_widget`, `nav`,
-`navbar`, `navlist`, `mode_toggle`, `pagination`, `scrollspy`,
-`checkbox/group`, `radio/group`, et le `select/listbox/*` dédié
-(`<ui.menu>` + `<ui.menu_item>` couvre le cas riche).
+`navbar`, `navlist`, `pagination`, `scrollspy`, `checkbox/group`,
+`radio/group`, et le `select/listbox/*` dédié (`<ui.menu>` +
+`<ui.menu_item>` couvre le cas riche). `mode_toggle` a rejoint le port
+(voir "Système & XUI natifs" plus bas).
 
 ## Index des composants
 
-Tabledes 50 composants par famille. Props = valeurs typiques de `{% uivars %}`.
+Table des composants portés par famille. Props = valeurs typiques de `{% uivars %}`.
 
 ### Conteneurs & structure
 
@@ -213,11 +214,22 @@ transitions entrée/sortie.
 > (`datepicker.html` / `calendar.html`), les conversions côté serveur étant
 > équivalentes aux bindings Alpine.
 
-### Système (alpine)
+### Système & XUI natifs
 
-| Composant | Props |
-|---|---|
-| `<ui.alpine/>` | — (émet les 3 `defer`) |
+Ces composants ne sont **pas** des ports django-cotton-ui — écrits pour
+xui, ils portent le bootstrapping du kit (assets, thème, CSRF, navigation
+sans rechargement). Aucun n'a de dépendance à Alpine sauf mention contraire.
+
+| Composant | Props | Notes |
+|---|---|---|
+| `<ui.xui/>` | — | `<link>` CSS de `cotton-ui.css`/`cotton-ui.tokens.css` — à poser dans `<head>`. |
+| `<ui.xuiscript/>` | — | `<script defer>` de `cotton-ui.min.js` (behaviors du bundle). |
+| `<ui.alpine/>` | — | émet les 3 `<script defer>` Alpine (collapse → focus → core), voir plus haut. |
+| `<ui.xuiboost/>` | — | charge `xui-boost.js` — navigation sans rechargement complet sur les liens `data-xui-nav-link` (voir `docs/architecture.md`). |
+| `<ui.theme/>` | — | `<link>` vers le thème custom monté par `mount_theme()` — vide (aucun `<link>`) si `mount_theme()` n'a jamais été appelé. À poser après `<ui.xui/>` pour gagner la cascade. |
+| `<ui.form>` | `action`, `method` (défaut `post`), `class` | `<form>` avec `csrf_token` injecté automatiquement (sauf `method="get"`) — voir `docs/plugins.md` §10. |
+| `<ui.mode_toggle/>` | `storage_key`, `default` (light/dark/system), `system`, `variant` (button/menu/switch/headless), `size`, `class` | bascule `.dark` sur `<html>`, persiste dans `localStorage`, se resynchronise entre onglets. Alpine requis (`x-data`). |
+| `<ui.mode_toggle_head/>` | `storage_key`, `default` | script anti-flash à poser dans `<head>` **avant** les feuilles de style — garder en sync avec `<ui.mode_toggle/>`. `<script>` inline, couvert par un hash CSP précis (`xui/security.py`) tant qu'il est appelé sans override. |
 
 ## Conventions d'utilisation
 

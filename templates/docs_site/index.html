@@ -1,0 +1,35 @@
+{% extends "layouts/page.html" %}
+{% block title %}xui — Documentation{% endblock %}
+{% block page_title %}xui{% endblock %}
+{% block page_content %}
+<p class="text-ink-600 dark:text-ink-300 mb-6 max-w-2xl">
+  xui est un SDK de pages server-rendues pour plugins xcore — jamais un
+  prérequis, jamais une couche kernel. Cette documentation est elle-même
+  servie par un plugin xui (<code>docs_site</code>), et chaque exemple de
+  composant ci-après est un vrai <code>&lt;ui.x&gt;</code> rendu en direct,
+  pas une capture d'écran.
+</p>
+
+<ui.card class="mb-6">
+  <h2 class="text-lg font-semibold mb-2">Principes fondateurs</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm text-ink-600 dark:text-ink-300">
+    <li>Le serveur est la seule source de vérité pour la sécurité.</li>
+    <li>Un seul système d'auth, deux façades (API pure et pages xui).</li>
+    <li>Compatible par construction avec tout frontend externe — un plugin React/Vue n'importe jamais xui.</li>
+    <li>Chaque appel réseau est explicite, tracé — aucun dispatcher générique.</li>
+  </ul>
+</ui.card>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <ui.card>
+    <h3 class="font-medium mb-1">Nouveau ici ?</h3>
+    <p class="text-sm text-ink-500 mb-3">Installer xui et monter sa première page.</p>
+    <ui.button href="/plugins/docs_site/demarrage" variant="primary">Démarrage</ui.button>
+  </ui.card>
+  <ui.card>
+    <h3 class="font-medium mb-1">Voir les composants</h3>
+    <p class="text-sm text-ink-500 mb-3">57 composants <code>&lt;ui.x&gt;</code>, rendus en direct.</p>
+    <ui.button href="/plugins/docs_site/composants/base" variant="primary">Composants</ui.button>
+  </ui.card>
+</div>
+{% endblock %}

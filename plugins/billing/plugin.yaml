@@ -1,0 +1,7 @@
+name: billing
+version: 0.1.0
+description: "Facturation minimale en lecture seule — liste des factures."
+entry_point: src/main.py
+execution_mode: trusted
+requires:
+  - ui_kit

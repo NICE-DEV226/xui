@@ -1,0 +1,332 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 4.4.1
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2023 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+
+# Make data base, printed on Wed Sep  2 10:13:10 2026
+
+# Variables
+
+# environment
+MEMORY_PRESSURE_WRITE = c29tZSAyMDAwMDAgMjAwMDAwMAA=
+# environment
+GDK_BACKEND = wayland
+# environment
+LC_ALL = C
+# environment
+NO_AT_BRIDGE = 1
+# environment
+GTK_RC_FILES = /etc/gtk/gtkrc:/home/eliezer/.gtkrc:/home/eliezer/.config/gtkrc
+# environment
+VSCODE_CRASH_REPORTER_PROCESS_TYPE = extensionHost
+# environment
+VSCODE_CWD = /home/eliezer
+# default
+MAKE_COMMAND := make
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# default
+.VARIABLES := 
+# environment
+PWD = /home/eliezer/devs/xui
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
+MAIL = /var/spool/mail/eliezer
+# environment
+XDG_DATA_DIRS = /home/eliezer/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share:/var/lib/snapd/desktop
+# environment
+OLDPWD = /home/eliezer
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# automatic
+%F = $(notdir $%)
+# environment
+VSCODE_CODE_CACHE_PATH = /home/eliezer/.config/Code/CachedData/a5b500951314efd502d07465bd138dfbd714a960
+# environment
+XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session1
+# environment
+LANG = C
+# environment
+XAUTHORITY = /run/user/1000/xauth_YKLpOo
+# default
+.LOADED := 
+# default
+.INCLUDE_DIRS := /usr/local/include /usr/include
+# environment
+MEMORY_PRESSURE_WATCH = /sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/plasma-plasmashell.service/memory.pressure
+# makefile
+MAKEFLAGS = pqrR
+# makefile
+CURDIR := /home/eliezer/devs/xui
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+# environment
+VSCODE_L10N_BUNDLE_LOCATION = file:///home/eliezer/.vscode/extensions/ms-ceintl.vscode-language-pack-fr-1.131.2026082318/translations/extensions/vscode.json-language-features.i18n.json
+# environment
+ICEAUTHORITY = /run/user/1000/iceauth_TTiCsh
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+MFLAGS = -pqrR
+# default
+.SHELLFLAGS := -c
+# environment
+WAYLAND_DISPLAY = wayland-0
+# environment
+XDG_CONFIG_DIRS = /home/eliezer/.config/kdedefaults:/etc/xdg
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# environment
+XDG_SESSION_DESKTOP = KDE
+# makefile (from 'makefile', line 1)
+MAKEFILE_LIST := makefile
+# automatic
+@F = $(notdir $@)
+# makefile (from 'makefile', line 8)
+TAILWIND_BIN := .bin/tailwindcss
+# environment
+VSCODE_PID = 7754
+# environment
+XDG_SESSION_TYPE = wayland
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# environment
+SESSION_MANAGER = local/archlinux:@/tmp/.ICE-unix/1565,unix/archlinux:/tmp/.ICE-unix/1565
+# automatic
+*F = $(notdir $*)
+# environment
+CHROME_DESKTOP = code.desktop
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# makefile (from 'makefile', line 7)
+TAILWIND_VERSION := v4.0.12
+# environment
+VSCODE_NLS_CONFIG = {"userLocale":"fr","osLocale":"fr-fr","resolvedLanguage":"fr","defaultMessagesFile":"/usr/share/code/resources/app/out/nls.messages.json","languagePack":{"translationsConfigFile":"/home/eliezer/.config/Code/clp/553230b5353fa2ca11eba85a38f09be7.fr/tcf.json","messagesFile":"/home/eliezer/.config/Code/clp/553230b5353fa2ca11eba85a38f09be7.fr/a5b500951314efd502d07465bd138dfbd714a960/nls.messages.json","corruptMarkerFile":"/home/eliezer/.config/Code/clp/553230b5353fa2ca11eba85a38f09be7.fr/corrupted.info"},"locale":"fr","availableLanguages":{"*":"fr"},"_languagePackId":"553230b5353fa2ca11eba85a38f09be7.fr","_languagePackSupport":true,"_translationsConfigFile":"/home/eliezer/.config/Code/clp/553230b5353fa2ca11eba85a38f09be7.fr/tcf.json","_cacheRoot":"/home/eliezer/.config/Code/clp/553230b5353fa2ca11eba85a38f09be7.fr","_resolvedLanguagePackCoreLocation":"/home/eliezer/.config/Code/clp/553230b5353fa2ca11eba85a38f09be7.fr/a5b500951314efd502d07465bd138dfbd714a960","_corruptedFile":"/home/eliezer/.config/Code/clp/553230b5353fa2ca11eba85a38f09be7.fr/corrupted.info"}
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# makefile
+SHELL = /bin/sh
+# environment
+NoDefaultCurrentDirectoryInExePath = 1
+# default
+MAKECMDGOALS := all
+# environment
+SHLVL = 1
+# environment
+MAKELEVEL := 0
+# default
+MAKE = $(MAKE_COMMAND)
+# environment
+PATH = /home/eliezer/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/var/lib/flatpak/exports/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/var/lib/snapd/snap/bin
+# default
+MAKEFILES := 
+# environment
+MOTD_SHOWN = pam
+# automatic
+^F = $(notdir $^)
+# environment
+INVOCATION_ID = 60f6647af2734f6d874727c8c8f23454
+# environment
+_JAVA_AWT_WM_NONREPARENTING = 1
+# environment
+VSSCRIPT_PATH = /usr/lib/python3.14/site-packages/vapoursynth/libvsscript.so
+# automatic
+?F = $(notdir $?)
+# environment
+KDE_APPLICATIONS_AS_SCOPE = 1
+# environment
+XDG_SEAT = seat0
+# environment
+XDG_CURRENT_DESKTOP = KDE
+# automatic
++F = $(notdir $+)
+# environment
+XDG_SEAT_PATH = /org/freedesktop/DisplayManager/Seat0
+# environment
+DESKTOP_SESSION = plasma
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+LOGNAME = eliezer
+# environment
+XDG_VTNR = 1
+# makefile
+.DEFAULT_GOAL := .bin/tailwindcss
+# environment
+SYSTEMD_EXEC_PID = 1571
+# environment
+DISPLAY = :1
+# environment
+USER = eliezer
+# default
+MAKE_VERSION := 4.4.1
+# environment
+KDE_SESSION_UID = 1000
+# environment
+MANAGERPID = 697
+# environment
+DEBUGINFOD_URLS = https://debuginfod.archlinux.org 
+# environment
+XKB_DEFAULT_LAYOUT = fr
+ 
+make: *** No rule to make target 'all'.  Stop.
+
+# environment
+_ = /usr/bin/make
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# environment
+FC_FONTATIONS = 1
+# environment
+JOURNAL_STREAM = 9:16908
+# environment
+CLAUDE_AGENT_SDK_VERSION = 0.3.257
+# environment
+XDG_SESSION_CLASS = user
+# environment
+GTK2_RC_FILES = /etc/gtk-2.0/gtkrc:/home/eliezer/.gtkrc-2.0:/home/eliezer/.config/gtkrc-2.0
+# environment
+HOME = /home/eliezer
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+VSCODE_IPC_HOOK = /run/user/1000/vscode-d639ec85-1.13-main.sock
+# environment
+XDG_SESSION_ID = 3
+# default
+.RECIPEPREFIX := 
+# automatic
+<F = $(notdir $<)
+# default
+SUFFIXES := 
+# environment
+VSCODE_CLI = 1
+# environment
+ELECTRON_NO_ATTACH_CONSOLE = 1
+# environment
+MANAGERPIDFDID = 698
+# environment
+KDE_SESSION_VERSION = 6
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs notintermediate shell-export archives jobserver jobserver-fifo output-sync check-symlink guile load
+# environment
+KDE_FULL_SESSION = true
+# environment
+XDG_MENU_PREFIX = plasma-
+# environment
+VSCODE_ESM_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+QT_WAYLAND_RECONNECT = 1
+# variable set hash-table stats:
+# Load=106/1024=10%, Rehash=0, Collisions=4/140=3%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 47, inode 17372845): 25 files, no impossibilities.
+
+# 25 files, no impossibilities in 1 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+.bin/tailwindcss:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'makefile', line 11):
+	@mkdir -p .bin
+	@echo "téléchargement de tailwindcss $(TAILWIND_VERSION) (linux-x64, binaire standalone officiel tailwindlabs)…"
+	@curl -sfL -o $(TAILWIND_BIN) \
+		"https://github.com/tailwindlabs/tailwindcss/releases/download/$(TAILWIND_VERSION)/tailwindcss-linux-x64"
+	@chmod +x $(TAILWIND_BIN)
+
+theme-watch: .bin/tailwindcss
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'makefile', line 28):
+	@$(TAILWIND_BIN) -i theme.css -o templates/static/theme.css --watch
+
+clean:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'makefile', line 34):
+	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null; true
+	@find . -type f \( -name "*.pyc" -o -name "*.pyo" -o -name "*.backup" \) -exec rm -f {} +
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+all:
+#  Command line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+
+css-watch: .bin/tailwindcss
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'makefile', line 21):
+	@$(TAILWIND_BIN) -i tailwind-src.css -o templates/static/app.css --watch
+
+css: .bin/tailwindcss
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'makefile', line 18):
+	@$(TAILWIND_BIN) -i tailwind-src.css -o templates/static/app.css
+
+theme: .bin/tailwindcss
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'makefile', line 24):
+	@mkdir -p templates/static
+	@$(TAILWIND_BIN) -i theme.css -o templates/static/theme.css
+
+# Not a target:
+makefile:
+#  Implicit rule search has been done.
+#  File is secondary (prerequisite of .SECONDARY).
+#  Last modified 2026-09-01 19:13:29.78760194
+#  File has been updated.
+#  Successfully updated.
+
+# files hash-table stats:
+# Load=10/1024=1%, Rehash=0, Collisions=0/25=0%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 1 (0) / strings = 37 / storage = 336 B / avg = 9 B
+# current buf: size = 8162 B / used = 336 B / count = 37 / avg = 9 B
+
+# strcache performance: lookups = 50 / hit rate = 26%
+# hash-table stats:
+# Load=37/8192=0%, Rehash=0, Collisions=6/50=12%
+# Finished Make data base on Wed Sep  2 10:13:10 2026
+
+ 

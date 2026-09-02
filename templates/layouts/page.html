@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mx-auto max-w-5xl px-6 py-8">
+  <div class="flex items-center justify-between gap-4 mb-6">
+    <h1 class="text-2xl font-semibold">{% block page_title %}{% endblock %}</h1>
+    <div class="flex items-center gap-2">{% block page_actions %}{% endblock %}</div>
+  </div>
+  {% block page_content %}{% endblock %}
+</div>
+{% endblock %}

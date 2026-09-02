@@ -1,0 +1,16 @@
+{# Porté depuis django-cotton-ui (MIT, Will Abbott). À poser dans <head>,
+   avant la feuille de style, pour éviter un flash du mauvais thème au
+   premier rendu — garder storage_key/default synchronisés avec
+   <ui.mode_toggle/>. Script inline : voir le TODO CSP dans xui/security.py
+   (report_only=True pour l'instant, ce bloc casserait un script-src strict
+   sans nonce/hash). #}
+{% uivars storage_key="theme" default="system" %}
+<script>
+    (function () {
+        try {
+            var mode = localStorage.getItem("{{ storage_key }}") || "{{ default }}";
+            var dark = mode === "dark" || (mode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            document.documentElement.classList.toggle("dark", dark);
+        } catch (e) {}
+    })();
+</script>

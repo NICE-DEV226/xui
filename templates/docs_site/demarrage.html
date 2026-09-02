@@ -1,0 +1,60 @@
+{% extends "layouts/page.html" %}
+{% block title %}Démarrage — xui{% endblock %}
+{% block page_title %}Démarrage{% endblock %}
+{% block page_content %}
+<div class="max-w-2xl space-y-8">
+
+<div>
+  <h2 class="text-lg font-semibold mb-2">1. Installer</h2>
+  <pre class="bg-ink-900 text-ink-100 rounded-control p-4 text-xs overflow-x-auto">uv add xui
+uv pip install -e ../microframe   # le vrai moteur (pas le paquet PyPI "microframe", sans rapport)</pre>
+</div>
+
+<div>
+  <h2 class="text-lg font-semibold mb-2">2. Câbler l'app hôte (main.py)</h2>
+  <pre class="bg-ink-900 text-ink-100 rounded-control p-4 text-xs overflow-x-auto">from xui.csrf import CSRFMiddleware
+from xui.mount import mount_builtin_assets
+
+app.add_middleware(CSRFMiddleware, get_token=lambda: engine.csrf_token,
+                    protected_paths=["/plugins/mon_plugin"])
+
+# dans lifespan(), après await xcore.boot(app) :
+mount_builtin_assets(app)  # CSS/JS des <ui.x> livrés avec xui</pre>
+</div>
+
+<div>
+  <h2 class="text-lg font-semibold mb-2">3. Écrire un plugin avec une page</h2>
+  <pre class="bg-ink-900 text-ink-100 rounded-control p-4 text-xs overflow-x-auto">from xui.urls import path, mount_xui_pages
+
+def _home_view(ctx):
+    ctx.require_role("app.view")
+    return {"title": "Accueil"}
+
+urlpatterns = [path("/", _home_view, template="mon_plugin/home.html", name="mon_plugin.home")]
+
+class Plugin(TrustedBase):
+    def get_router(self):
+        router = APIRouter()
+        engine = self.get_service("ext.template_engine").engine
+        mount_xui_pages(router, self.ctx, engine, urlpatterns, login_path="/plugins/demo_auth/login")
+        return router</pre>
+</div>
+
+<div>
+  <h2 class="text-lg font-semibold mb-2">4. Le template</h2>
+  <pre class="bg-ink-900 text-ink-100 rounded-control p-4 text-xs overflow-x-auto">{% raw %}{% extends "layouts/page.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_content %}
+  {% endraw %}&lt;ui.card&gt;Bienvenue, {% raw %}{{ user.sub }}{% endraw %}.&lt;/ui.card&gt;{% raw %}
+{% endblock %}{% endraw %}</pre>
+  <p class="text-sm text-ink-500">
+    <code>nav</code>, <code>user</code>, <code>request</code> sont injectés
+    automatiquement par <code>mount_xui_page(s)</code> — aucun recalcul
+    dans la vue.
+  </p>
+</div>
+
+<p class="text-sm">Pour aller plus loin : <a href="/plugins/docs_site/guide-plugins" class="text-accent hover:underline">le guide plugin complet</a>.</p>
+
+</div>
+{% endblock %}

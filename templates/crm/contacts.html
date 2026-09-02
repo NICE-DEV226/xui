@@ -1,0 +1,35 @@
+{% extends "layouts/page.html" %}
+{% block title %}Contacts{% endblock %}
+{% block page_title %}Contacts{% endblock %}
+{% block page_content %}
+{% set errors = errors|default({}) %}
+{% set values = values|default({}) %}
+<ui.table>
+  <thead>
+    <tr><th>Nom</th><th>Email</th></tr>
+  </thead>
+  <tbody>
+    {% for c in contacts %}
+    <tr><td>{{ c.name }}</td><td>{{ c.email }}</td></tr>
+    {% endfor %}
+  </tbody>
+</ui.table>
+
+{% if can_create %}
+<ui.form method="post" action="/plugins/crm_app/contacts/new" class="mt-6 max-w-sm space-y-4">
+  <div>
+    <ui.label for_="name">Nom</ui.label>
+    <ui.input name="name" value="{{ values.name|default('') }}"/>
+    {% if errors.name %}<ui.error message="{{ errors.name }}"/>{% endif %}
+  </div>
+  <div>
+    <ui.label for_="email">Email</ui.label>
+    <ui.input type="email" name="email" value="{{ values.email|default('') }}"/>
+    {% if errors.email %}<ui.error message="{{ errors.email }}"/>{% endif %}
+  </div>
+  <ui.button type="submit" variant="primary">Créer</ui.button>
+</ui.form>
+{% else %}
+<p class="mt-6 text-sm text-ink-500"><em>Rôle <code>sales.create</code> requis pour ajouter un contact.</em></p>
+{% endif %}
+{% endblock %}

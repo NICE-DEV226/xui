@@ -39,6 +39,32 @@ else:
 
 
 
+async def resolve_user_or_anonymous(request: Request) -> AuthPayload | None:
+    """Résout l'utilisateur courant en distinguant "anonyme" d'une panne
+    réelle du backend d'auth (docs/XUI_EVOLUTION_ROADMAP.md §12.2) : un 401
+    (token absent, invalide ou expiré — un visiteur anonyme légitime)
+    devient `None`, mais toute AUTRE `HTTPException` (503 "auth backend non
+    disponible", ou n'importe quelle erreur inattendue) remonte telle
+    quelle. Ne jamais élargir en `except Exception` généralisé — une panne
+    réelle ne doit jamais se déguiser silencieusement en "non connecté" ;
+    l'appelant ne pourrait alors plus la distinguer d'un simple visiteur.
+
+    `mount_xui_page` l'utilise ; tout plugin qui résout l'utilisateur à la
+    main dans une route POST (mutation) doit faire pareil plutôt que
+    répéter un `try/except Exception` (vu deux fois dans ce repo avant ce
+    correctif — voir `docs/plugins.md`).
+    """
+    from fastapi import HTTPException
+    from xcore.kernel.api.rbac import _resolve_user
+
+    try:
+        return await _resolve_user(request)
+    except HTTPException as exc:
+        if exc.status_code == 401:
+            return None
+        raise
+
+
 class UIPermissionDenied(Exception):
     """Levée par `UIContext.require_role` — jamais laissée remonter telle
     quelle : `mount_xui_page` l'intercepte pour rediriger vers le login

@@ -1,0 +1,5 @@
+name: crm_app
+version: 0.1.0
+description: "CRM minimal — liste et création de contacts (docs/spec-v1.md §6)."
+entry_point: src/main.py
+execution_mode: trusted

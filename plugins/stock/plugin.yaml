@@ -1,0 +1,5 @@
+name: stock
+version: 0.1.0
+description: "Inventaire minimal en lecture seule — liste des articles."
+entry_point: src/main.py
+execution_mode: trusted

@@ -1,0 +1,11 @@
+{# Formulaire avec CSRF automatique (docs/spec-v1.md §10) : le champ caché
+   `csrf_token` est injecté ici, une fois pour toutes, plutôt que copié-collé
+   dans chaque template de plugin. `csrf_token` est un global Jinja2 (comme
+   `xui_theme_url`/`static`) — accessible même si ce composant est rendu
+   depuis une template isolée (voir microframe/engine/components/extension.py).
+   Pas de jeton sur GET : rien à protéger, une requête GET ne mute rien. #}
+{% uivars action="" method="post" class="" %}
+<form action="{{ action }}" method="{{ method }}" {{ attrs }} class="{{ class }}">
+  {% if method|lower != "get" %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+  {{ slot }}
+</form>

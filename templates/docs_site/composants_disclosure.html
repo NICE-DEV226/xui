@@ -1,0 +1,37 @@
+{% extends "layouts/page.html" %}
+{% import "docs_site/_macros.html" as m %}
+{% block title %}Composants — Disclosure & nav — xui{% endblock %}
+{% block page_title %}Composants — Disclosure & navigation{% endblock %}
+{% block page_content %}
+
+{% call m.example("ui.accordion + ui.accordion_item") %}
+<ui.accordion>
+  <ui.accordion_item header="Qu'est-ce que xui ?">Un SDK de pages server-rendues pour plugins xcore.</ui.accordion_item>
+  <ui.accordion_item header="Faut-il l'utiliser ?">Non — un plugin React/Vue n'importe jamais xui (§14).</ui.accordion_item>
+</ui.accordion>
+{% endcall %}
+{{ m.snippet(snippets.accordion) }}
+
+{% call m.example("ui.tabs + ui.tab") %}
+<ui.tabs default_tab="a">
+  <ui.tab name="a">Onglet A</ui.tab>
+  <ui.tab name="b">Onglet B</ui.tab>
+</ui.tabs>
+{% endcall %}
+{{ m.snippet(snippets.tabs) }}
+
+{% call m.example("ui.dropdown + ui.dropdown_item") %}
+<ui.dropdown trigger_text="Actions">
+  <ui.dropdown_item>Modifier</ui.dropdown_item>
+  <ui.dropdown_item variant="danger">Supprimer</ui.dropdown_item>
+</ui.dropdown>
+{% endcall %}
+{{ m.snippet(snippets.dropdown) }}
+
+<p class="text-sm text-ink-500 mb-8">
+  <code>&lt;ui.menu&gt;</code>/<code>&lt;ui.menu_item&gt;</code> couvrent le
+  cas "select riche inline" (recherche, groupes) — voir
+  <code>docs/components.md</code> pour le détail complet des props.
+</p>
+
+{% endblock %}

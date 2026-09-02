@@ -1,0 +1,25 @@
+{% extends "layouts/page.html" %}
+{% block title %}Stock{% endblock %}
+{% block page_title %}Stock{% endblock %}
+{% block page_content %}
+<ui.table>
+  <thead>
+    <tr><th>SKU</th><th>Article</th><th>Quantité</th></tr>
+  </thead>
+  <tbody>
+    {% for i in items %}
+    <tr>
+      <td>{{ i.sku }}</td>
+      <td>{{ i.name }}</td>
+      <td>
+        {% if i.qty < 10 %}
+        <ui.badge color="red">{{ i.qty }} — faible</ui.badge>
+        {% else %}
+        <ui.badge color="emerald">{{ i.qty }}</ui.badge>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</ui.table>
+{% endblock %}

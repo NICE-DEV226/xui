@@ -51,6 +51,32 @@ sequenceDiagram
   R-->>B: HTMLResponse(html)
 ```
 
+## Composants `<ui.x>` — le moteur qui les fait tourner
+
+Vit dans **microframe**, pas dans xui (`microframe/engine/components/ui_kit.py`)
+— xui ne fait qu'enregistrer ses templates dedans à l'import
+(`auto_register_ui_components`). Deux mécanismes que les composants portés
+utilisent couramment, à ne pas croire absents :
+
+- **`{% uivars key=default ... %}`** (première ligne de tout composant) :
+  déclare les props connues avec leurs défauts ; tout ce que l'appelant a
+  passé en plus (pas déclaré, pas un slot) est collecté automatiquement
+  dans `attrs` (`<ui.button id="save-btn" data-testid="x">` marche sans que
+  le composant liste chaque attribut possible de l'appelant).
+- **Named slots** — `<ui-slot name="header">...</ui-slot>` à l'intérieur
+  d'un `<ui.card>...</ui.card>` capture ce markup dans une variable
+  `header` propre au template de `card`, exactement comme le slot par
+  défaut `{{ slot }}` mais nommé. Entièrement géré par le préprocesseur
+  HTML-sugar (transformé en capture Jinja2 `{% set %}...{% endset %}`
+  native) — pas de plomberie runtime fragile. Vérifié en le rendant
+  réellement (pas en lisant le code) : `<ui.card><ui-slot name="header">X</ui-slot>Y</ui.card>`
+  place bien `X` dans la zone header et `Y` dans le corps.
+
+`UIComponentPreprocessor._convert` traite les blocs **du plus imbriqué au
+moins imbriqué** (comme `ComponentExtensions`) pour supporter
+`<ui.x><ui.y/></ui.x>` sans que la regex du parent n'avale les props de
+l'enfant.
+
 ## Modules
 
 ### `xui/__init__.py` — point d'entrée
@@ -58,12 +84,21 @@ sequenceDiagram
 - Exporte l'API publique (`__all__`) : `UIContext`, `UIPermissionDenied`,
   `UIRedirect`, `mount_xui_page`, `render_xui_template`,
   `mount_plugin_static`, `mount_spa`, `mount_dev_proxy`,
-  `mount_spa_or_proxy`, `mount_builtin_assets`, `FormResult`, `parse_form`.
+  `mount_spa_or_proxy`, `mount_builtin_assets`, `FormResult`, `parse_form`,
+  `PageRoute`, `path`, `mount_xui_pages`, `reverse`, `mount_theme`.
 - **Auto-enregistrement des composants** à l'import : appelle
   `microframe.engine.components.auto_register_ui_components` sur
-  `xui/components/` — tout projet qui dépend de xui a les 50 composants
+  `xui/components/` — tout projet qui dépend de xui a les 57 composants
   `<ui.x>` disponibles sans copier de fichiers. Silencieux si microframe
   n'est pas installé (plugin `mode=spa` pur).
+  **Attention import circulaire au redémarrage à chaud** : ajouter un
+  nouveau fichier dans `xui/components/` (ou `xui/static/`) pendant qu'un
+  process tourne déjà n'a aucun effet tant qu'il n'est pas redémarré —
+  l'auto-enregistrement ne tourne qu'une fois à l'import du package, et
+  `uvicorn --reload` ne surveille que les fichiers `.py` du projet, pas les
+  assets d'une dépendance installée en editable (vécu deux fois : un
+  nouveau composant → `<!-- UI component 'x' not found -->`, un nouveau
+  fichier statique → 404, jusqu'au redémarrage manuel).
 
 ### `xui/context.py` — contexte de page
 
@@ -106,6 +141,86 @@ Ce découplage est verrouillé par `tests/test_sans_xcore.py`.
 `content-length`/`transfer-encoding`/`connection` (resp) sont exclues pour
 éviter les interférences entre le client et l'upstream.
 
+### `xui/urls.py` — déclaration de pages façon Django
+
+```python
+PageRoute(path, view, template, name=None)
+path(route, view, *, template, name=None) -> PageRoute
+mount_xui_pages(router, ctx, engine, urlpatterns: list[PageRoute], *, login_path="/login")
+reverse(name) -> str
+```
+
+- Pur sucre syntaxique au-dessus de `mount_xui_page` : `mount_xui_pages`
+  déroule `urlpatterns` UNE FOIS pendant `get_router()` et appelle
+  `mount_xui_page` pour chacune — aucune résolution au moment d'une
+  requête, FastAPI route comme si les appels avaient été écrits à la main.
+  Ce n'est donc pas le dispatcher générique interdit par la spec (§15) :
+  rien ne décide dynamiquement quelle vue appeler pour un chemin donné en
+  dehors du routeur FastAPI lui-même.
+- `reverse(name)` est un lookup statique dans un dict process-wide
+  (`name -> path`), pas un résolveur de requête — équivalent minimal de
+  `django.urls.reverse()`, sans segments dynamiques (`<int:id>`) pour
+  l'instant.
+- Collision de nom (`name` déjà pris pour un `path` différent) → `ValueError`
+  à `mount_xui_pages()`. Remonter les **mêmes** `urlpatterns` deux fois
+  (hot-reload d'un plugin) est sans effet : la comparaison se fait sur la
+  paire `(name, path)`, pas seulement sur `name`.
+
+### `xui/theme.py` — thème Tailwind custom
+
+```python
+mount_theme(app, engine, css_path, url_path="/xui-theme/theme.css")
+```
+
+- `css_path` doit être une sortie **déjà compilée** (Tailwind ou CSS pur) —
+  `mount_theme` ne compile rien, il sert le fichier via une route dédiée
+  (`FileResponse`, résolue par requête, pas un `StaticFiles` qui exigerait
+  le dossier présent au boot) et enregistre son URL comme global Jinja2
+  (`engine.env.globals["xui_theme_url"]`).
+- **Pourquoi un global et pas le contexte de rendu** : un composant `<ui.x>`
+  (ici `<ui.theme/>`) est rendu depuis une template **isolée** par
+  `UIComponentExtension._render_async` (microframe) — il ne voit que ses
+  props explicites et les globals de l'environnement, jamais les variables
+  de la page qui l'inclut (`nav`, `user`, etc.). Un thème étant un réglage
+  process-wide (pas par-requête), c'est exactement ce que les globals
+  portent déjà (`csrf_token`, `static`).
+- **Pipeline de build réel, pas de simulation** : CLI standalone officiel
+  `tailwindlabs/tailwindcss` (aucun Node/npm requis), téléchargé et
+  vérifié par checksum dans `.bin/tailwindcss` (git-ignoré), piloté par
+  `make css` / `make theme` (voir le `makefile`). `cotton-ui.css` (vendoré,
+  `xui/static/`) reste un artefact figé séparé — jamais recompilé par ce
+  pipeline, qui ne scanne que les templates du **projet**
+  (`tailwind-src.css`/`theme.css` en sources).
+- **Deux pièges vérifiés en pratique**, à connaître avant de blâmer le
+  moteur :
+  1. `@theme { --x: ... }` seul n'émet la variable dans la sortie que si
+     une classe qui l'utilise apparaît dans les fichiers scannés (`@source`)
+     — Tailwind v4 élague le reste par défaut. `@theme static { ... }`
+     force l'émission de tout.
+  2. Le `dark:` de `cotton-ui.css` est **par classe**
+     (`:where(.dark, .dark *):not(:where(.light, .light *))`), pas par
+     `prefers-color-scheme`. Un build de thème projet qui ne déclare pas la
+     même règle (`@custom-variant dark (&:where(.dark, .dark *):not(&:where(.light, .light *)));`)
+     retombe sur le media-query par défaut — les deux CSS doivent
+     s'accorder, sinon `<ui.mode_toggle/>` ne change que la moitié de la
+     page (vécu : le shell du projet ignorait le clic, seuls les
+     composants du kit réagissaient).
+
+### `xui/static/xui-boost.js` — navigation sans rechargement complet
+
+Chargé via `<ui.xuiboost/>` (composant, optionnel — un layout qui ne
+l'inclut pas garde une navigation classique). Intercepte les clics sur les
+liens marqués `data-xui-nav-link`, fait un `fetch()` vers la **même route
+réelle** qu'un clic aurait suivie, parse la réponse (`DOMParser`), extrait
+`#xui-main` et remplace juste ce nœud — `history.pushState(..., res.url)`
+suit les redirections éventuelles (page protégée → `/login`). Dégradation
+gracieuse totale : sans JS, ou si le `fetch()` échoue (réseau, 403, page
+sans `#xui-main`), `location.href = url` fait une navigation normale.
+
+Toujours conforme à la spec §15 : aucune route n'existe que pour ce
+mécanisme, aucune résolution d'action opaque — c'est le navigateur qui
+ferait le même GET de toute façon.
+
 ### `xui/nav.py` — navigation cross-plugin
 
 ```python
@@ -133,14 +248,22 @@ UIPackageRegistry.unregister_plugin(plugin_name)
 registry = UIPackageRegistry()  # singleton de module
 ```
 
-- Partage de composants UI entre plugins par `package_id` (reverse-domain,
-  ex. `com.xcore.ui_kit`) + `exports` (callables Python rendant du HTML).
+- Partage de composants/données UI entre plugins par `package_id`
+  (reverse-domain, ex. `xui.ui_kit`, le vrai exemple du repo) + `exports`
+  (n'importe quel objet Python — callables, dicts, styles partagés).
 - **Règle d'usage** : `get()` se fait **au moment du rendu**, jamais à
   l'import-time du module — sinon référence périmée après un hot-reload du
   plugin exportateur (pattern documenté dans `docs/plugins.md`).
-- Divergence spec : pas de vérification topo au boot (le kernel installé n'a
-  pas de hook `_topo_sort` étendu UI) — `get()` échoue avec un message clair
-  au premier accès manquant.
+- Divergence spec, mais moins grave qu'annoncé : il n'y a pas de hook
+  `_topo_sort` **spécifique aux packages UI** dans le kernel installé — mais
+  le `requires:` **général** du kernel (dépendances backend, pas une
+  invention xui) donne bien un vrai ordre de chargement garanti si
+  l'exportateur y est déclaré. Vérifié en pratique (`plugins/ui_kit` +
+  `requires: [ui_kit]` dans `billing`/`tasks`) : le kernel charge par vagues
+  successives, l'exportateur avant ses consommateurs. `UIPackageRegistry`
+  lui-même ne vérifie toujours rien — c'est `requires:` qui protège `get()`,
+  pas le registre — donc un `requires:` oublié échoue seulement au premier
+  accès manquant, avec un message clair plutôt qu'au boot.
 
 ### `xui/csrf.py` — protection des mutations cookie-authentifiées
 
@@ -166,23 +289,37 @@ CSRFMiddleware(app, get_token: Callable[[], str], protected_paths: Sequence[str]
 
 ### `xui/security.py` — en-têtes de sécurité / CSP
 
-Jamais de promesse de durcissement : CSP **souple par défaut** en
-`report-only`.
+`report_only=True` reste le défaut prudent, mais `DEFAULT_CSP` n'est plus
+un `'unsafe-inline'` générique passe-partout — deux besoins réels
+documentés précisément plutôt qu'un blanket qui les cacherait :
 
 ```python
-DEFAULT_CSP  # script/style 'self' 'unsafe-inline' (layouts + html() inline) + base-uri 'self'
+DEFAULT_CSP
+# script-src 'self' 'unsafe-eval' 'sha256-<hash mode_toggle_head>'
+# style-src-elem 'self'       (aucun <style> nulle part dans le kit)
+# style-src-attr 'unsafe-inline'   (attrs style="" dynamiques — aucun mécanisme CSP ne les couvre)
+# + base-uri 'self', object-src 'none', frame-ancestors 'none', img-src 'self' data:
 SecurityHeadersMiddleware(app, *, csp=None, report_only=True, exclude_paths=())
 ```
 
-- Même exutoire que `csrf_token()` : `report_only=True` par défaut — on
-  accumule les violations en logs, on ne casse pas les pages de démo à
-  l'inline.
+- **`'unsafe-eval'`** : Alpine.js évalue `x-data`/`:class`/`@click` via
+  `eval`/`new Function` en interne — requis sans échappatoire tant qu'on
+  n'est pas passé à son build CSP-friendly (expressions précompilées,
+  chantier séparé, pas fait).
+- **Le hash** couvre l'unique `<script>` inline du kit
+  (`mode_toggle_head.html`, anti-flash de thème) — son rendu est
+  déterministe tant qu'il est appelé sans override de
+  `storage_key`/`default` (le seul appel du repo, `templates/base.html`).
+  **Si ce composant change, ou si `<ui.toast/>` (son propre `<script>`
+  inline, non utilisé actuellement) est un jour utilisé, recalculer le/les
+  hash(es)** — sinon blocage net en mode enforce.
 - Pose toujours `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
   `Referrer-Policy: strict-origin-when-cross-origin` ; CSP via
   `Content-Security-Policy-Report-Only`.
-- `report_only=False` → CSP stricte à activer en prod une fois les pages sans
-  inline ; `exclude_paths` pour les chemins qui ne doivent jamais porter
-  d'en-tête.
+- `report_only=False` **vérifié fonctionnel** (pas juste théorique) sur les
+  7 plugins de démo — login, dashboard, contacts tous 200, header CSP bien
+  formé. Reste `True` par défaut : passer en enforce est un choix de
+  posture prod pour l'app hôte, pas un défaut que xui impose.
 
 Vendue optionnelle dès l'install (toujours activable sans doute d'absence) :
 testée dans `tests/test_security.py`.
@@ -243,9 +380,9 @@ la spec `docs/spec-v1.md` en référence.
 | `mount_dev_proxy` WebSocket | pas de pass-through WS | HMR Vite non supporté à travers le proxy ; dev via `vite --host` sans HMR. |
 | Manifeste `ui.packages` / `ui.mode` ✓ | non consommé par le kernel installé | résolution par code : `mount_spa_or_proxy` + `UIPackageRegistry.register()` à `on_load()`. |
 | `PluginContext.plugin_dir` (§3) | gap | dériver le chemin de `__file__` (`Path(__file__).resolve().parent.parent`). |
-| Topo-sort `ui.packages` au boot (§8) | pas de hook `_topo_sort` UI | `registry.get(...)` au rendu — échec clair au premier accès manquant. |
+| Topo-sort `ui.packages` au boot (§8) | pas de hook `_topo_sort` **spécifique UI** — mais `requires:` général du kernel donne un vrai ordre, vérifié (`plugins/ui_kit`) | déclarer `requires: [exportateur]` dans le `plugin.yaml` du consommateur ; `registry.get(...)` reste sans garantie propre, c'est `requires:` qui protège. |
 | `NavRegistry`/`UIPackageRegistry` wirés kernel | singletons de module | hot-reload : `unregister_plugin()` dans `on_unload()`. |
-| CSP strict (self-only) | souple par défaut (`report_only=True`) | passer `report_only=False` en prod (`xui/security.py`), durcissement quand les templates n'auront plus d'inline. |
+| CSP strict (self-only) | `'unsafe-inline'` générique retiré de `script-src` (hash + `unsafe-eval` documentés à la place) ; `report_only=True` reste le défaut | vérifié fonctionnel en enforce sur les 7 plugins de démo — passer `report_only=False` reste un choix de l'app hôte. `style-src-attr 'unsafe-inline'` reste nécessaire (attrs `style=""` dynamiques, aucun mécanisme CSP ne les couvre) sauf portage complet vers des classes. |
 | MFE (`rendered_mfe`) | client branché, registre vide | route de fragment dédiée (§6) en attendant. |
 | Dispatcher `<action>`/`<remote>` (§15) | interdit | routes POST explicites + CSRF. |
 

@@ -1,0 +1,36 @@
+{% extends "layouts/page.html" %}
+{% import "docs_site/_macros.html" as m %}
+{% block title %}Composants — Overlays — xui{% endblock %}
+{% block page_title %}Composants — Overlays{% endblock %}
+{% block page_content %}
+
+{% call m.example("ui.select — natif") %}
+<ui.select variant="native" name="pays" placeholder="Choisir…">
+  <ui.select_option value="fr">France</ui.select_option>
+  <ui.select_option value="be">Belgique</ui.select_option>
+</ui.select>
+{% endcall %}
+{{ m.snippet(snippets.select) }}
+
+{% call m.example("ui.tooltip") %}
+<ui.tooltip content="Plus d'infos">
+  <ui.badge>?</ui.badge>
+</ui.tooltip>
+{% endcall %}
+{{ m.snippet(snippets.tooltip) }}
+
+{% call m.example("ui.popover") %}
+<ui.popover trigger="Ouvrir">
+  Contenu du popover, positionné automatiquement.
+</ui.popover>
+{% endcall %}
+{{ m.snippet(snippets.popover) }}
+
+<p class="text-sm text-ink-500 mb-8">
+  <code>&lt;ui.dialog&gt;</code>/<code>&lt;ui.drawer&gt;</code> (teleportés,
+  focus piégé) et <code>&lt;ui.combobox&gt;</code> (recherche + tags) ne
+  sont pas montrés ici pour rester lisible sur cette page — voir
+  <code>docs/components.md</code> pour leurs props complètes.
+</p>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "layouts/page.html" %}
+{% import "docs_site/_macros.html" as m %}
+{% block title %}Composants — Formulaire — xui{% endblock %}
+{% block page_title %}Composants — Formulaire{% endblock %}
+{% block page_content %}
+
+{% call m.example("ui.field + ui.label + ui.input") %}
+<ui.field label="Email">
+  <ui.input type="email" name="email" placeholder="vous@exemple.com"/>
+</ui.field>
+{% endcall %}
+{{ m.snippet(snippets.input) }}
+
+{% call m.example("ui.checkbox") %}
+<ui.checkbox name="accept" label="J'accepte les conditions"/>
+{% endcall %}
+{{ m.snippet(snippets.checkbox) }}
+
+{% call m.example("ui.switch") %}
+<ui.switch name="notifs" checked/>
+{% endcall %}
+{{ m.snippet(snippets.switch) }}
+
+{% call m.example("ui.button") %}
+<ui.button variant="primary">Enregistrer</ui.button>
+<ui.button variant="subtle">Annuler</ui.button>
+<ui.button variant="danger">Supprimer</ui.button>
+{% endcall %}
+{{ m.snippet(snippets.button) }}
+
+{% call m.example("ui.form — CSRF automatique (§10)") %}
+<div class="text-sm text-ink-500">
+  Rendu réel omis ici (soumettrait vers une route qui n'existe pas sur cette
+  page) — voir le résultat en vrai sur <a href="/plugins/crm_app/contacts" class="text-accent hover:underline">Contacts</a>.
+</div>
+{% endcall %}
+{{ m.snippet(snippets.form) }}
+
+<p class="text-sm text-ink-500">
+  <code>&lt;ui.form&gt;</code> injecte le champ caché <code>csrf_token</code>
+  lui-même (sauf <code>method="get"</code>) — voir
+  <a href="/plugins/docs_site/guide-plugins" class="text-accent hover:underline">le guide plugin</a>.
+</p>
+
+{% endblock %}

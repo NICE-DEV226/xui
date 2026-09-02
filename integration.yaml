@@ -15,7 +15,5 @@ services:
       module: microframe.engine.integration.xcore:TemplateEngineExtension
       config:
         directory: templates
-        namespaces:
-          crm: plugins/crm_app/templates
         enable_minify: false
         debug: true

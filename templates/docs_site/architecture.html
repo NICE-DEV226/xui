@@ -1,0 +1,35 @@
+{% extends "layouts/page.html" %}
+{% block title %}Architecture — xui{% endblock %}
+{% block page_title %}Architecture{% endblock %}
+{% block page_content %}
+<div class="max-w-2xl space-y-6 text-sm text-ink-600 dark:text-ink-300">
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Flux d'une page XUI</h2>
+  <p><code>mount_xui_page(s)</code> déclare la route → <code>_resolve_user</code> (même résolveur que <code>get_current_user</code>) → <code>UIContext(plugin_ctx, request, user)</code> → la vue → <code>engine.render(template, ctx)</code>, en injectant <code>nav</code>/<code>user</code>/<code>request</code> automatiquement.</p>
+</ui.card>
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Composants &lt;ui.x&gt;</h2>
+  <p>Le moteur (<code>microframe/engine/components/ui_kit.py</code>) fournit <code>{% raw %}{% uivars %}{% endraw %}</code> (props déclarées + attrs pass-through automatique) et les <strong>named slots</strong> (<code>&lt;ui-slot name="x"&gt;</code>) — entièrement gérés par un préprocesseur HTML-sugar, pas de plomberie runtime fragile.</p>
+</ui.card>
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Navigation sans rechargement (xui-boost.js)</h2>
+  <p>Intercepte les clics sur les liens internes, <code>fetch()</code> la même route réelle, extrait <code>#xui-main</code> de la réponse et le remplace — sidebar/header ne bougent pas, l'URL suit les redirections. Dégradation gracieuse totale sans JS.</p>
+</ui.card>
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Thème (xui.theme)</h2>
+  <p><code>mount_theme(app, engine, css_path)</code> sert un CSS déjà compilé et l'expose comme global Jinja2 (<code>xui_theme_url</code>) — un composant n'a jamais accès au contexte de la page qui l'inclut. Le pipeline Tailwind réel (<code>make css</code>/<code>make theme</code>) utilise le CLI standalone officiel, aucun Node/npm requis.</p>
+</ui.card>
+
+<ui.card>
+  <h2 class="font-semibold text-ink-900 dark:text-ink-100 mb-2">Sécurité</h2>
+  <p>CSRF (<code>xui.csrf.CSRFMiddleware</code>) sur les chemins cookie-authentifiés mutatifs uniquement. CSP (<code>xui.security</code>) évite le <code>'unsafe-inline'</code> générique : un hash précis pour l'unique script inline du kit, <code>'unsafe-eval'</code> documenté (requis par Alpine.js), <code>style-src</code> scindé élément/attribut.</p>
+</ui.card>
+
+<p>Détail module par module, diagrammes de séquence : <code>docs/architecture.md</code> dans le repo.</p>
+
+</div>
+{% endblock %}

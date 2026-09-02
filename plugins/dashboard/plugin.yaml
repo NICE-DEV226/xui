@@ -1,0 +1,5 @@
+name: dashboard
+version: 0.1.0
+description: "Page d'accueil de l'app unifiée — vitrine des composants <ui.x> partagés."
+entry_point: src/main.py
+execution_mode: trusted

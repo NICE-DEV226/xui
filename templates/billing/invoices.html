@@ -1,0 +1,20 @@
+{% extends "layouts/page.html" %}
+{% block title %}Facturation{% endblock %}
+{% block page_title %}Facturation{% endblock %}
+{% block page_content %}
+<ui.table>
+  <thead>
+    <tr><th>N°</th><th>Client</th><th>Montant</th><th>Statut</th></tr>
+  </thead>
+  <tbody>
+    {% for inv in invoices %}
+    <tr>
+      <td>{{ inv.number }}</td>
+      <td>{{ inv.client }}</td>
+      <td>{{ inv.amount }}</td>
+      <td><ui.badge color="{{ styles[inv.status].color }}">{{ styles[inv.status].label }}</ui.badge></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</ui.table>
+{% endblock %}

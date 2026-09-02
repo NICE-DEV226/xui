@@ -1,0 +1,5 @@
+name: docs_site
+version: 0.1.0
+description: "Documentation de xui, servie par xui — vitrine des <ui.x> en live, façon django-cotton.com."
+entry_point: src/main.py
+execution_mode: trusted

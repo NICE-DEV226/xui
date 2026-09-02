@@ -1,0 +1,7 @@
+name: tasks
+version: 0.1.0
+description: "Tâches minimales en lecture seule — liste des tâches en cours."
+entry_point: src/main.py
+execution_mode: trusted
+requires:
+  - ui_kit

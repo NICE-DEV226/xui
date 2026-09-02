@@ -1,0 +1,55 @@
+{% extends "layouts/page.html" %}
+{% import "docs_site/_macros.html" as m %}
+{% block title %}Composants — Base — xui{% endblock %}
+{% block page_title %}Composants — Base & retour visuel{% endblock %}
+{% block page_content %}
+
+{% call m.example("ui.card — carte avec titre/sous-titre") %}
+<ui.card title="Contact" subheading="Client depuis 2024">Grace Hopper — grace@example.com</ui.card>
+{% endcall %}
+{{ m.snippet(snippets.card) }}
+
+{% call m.example("ui.alert — bannière (info/success/warning/error)") %}
+<ui.alert variant="success" title="Enregistré">Les modifications ont été sauvegardées.</ui.alert>
+{% endcall %}
+{{ m.snippet(snippets.alert) }}
+
+{% call m.example("ui.badge — pastille de statut") %}
+<ui.badge color="emerald">Payée</ui.badge>
+<ui.badge color="amber">En attente</ui.badge>
+<ui.badge color="red">En retard</ui.badge>
+{% endcall %}
+{{ m.snippet(snippets.badge) }}
+
+{% call m.example("ui.progress — barre de progression") %}
+<ui.progress value="65" color="blue" show_value/>
+{% endcall %}
+{{ m.snippet(snippets.progress) }}
+
+{% call m.example("ui.spinner — loader") %}
+<ui.spinner size="md"/>
+{% endcall %}
+{{ m.snippet(snippets.spinner) }}
+
+{% call m.example("ui.table — tableau stylisé") %}
+<ui.table>
+  <thead><tr><th>Nom</th><th>Email</th></tr></thead>
+  <tbody><tr><td>Ada Lovelace</td><td>ada@example.com</td></tr></tbody>
+</ui.table>
+{% endcall %}
+{{ m.snippet(snippets.table) }}
+
+{% call m.example("ui.avatar — avatar avec initiales") %}
+<ui.avatar initials="AL" color="blue"/>
+{% endcall %}
+{{ m.snippet(snippets.avatar) }}
+
+{% call m.example("ui.breadcrumbs — fil d'Ariane") %}
+<ui.breadcrumbs>
+  <ui.breadcrumb_item href="/plugins/docs_site/">Accueil</ui.breadcrumb_item>
+  <ui.breadcrumb_item current>Contacts</ui.breadcrumb_item>
+</ui.breadcrumbs>
+{% endcall %}
+{{ m.snippet(snippets.breadcrumbs) }}
+
+{% endblock %}

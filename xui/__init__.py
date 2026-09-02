@@ -20,7 +20,7 @@ toujours par une route FastAPI explicite déclarée par le plugin lui-même
 
 from pathlib import Path
 
-from .context import UIContext, UIPermissionDenied, UIRedirect
+from .context import UIContext, UIPermissionDenied, UIRedirect, resolve_user_or_anonymous
 from .forms import FormResult, parse_form
 from .mount import (
     mount_builtin_assets,
@@ -32,6 +32,8 @@ from .mount import (
     render_xui_template,
 )
 from .security import DEFAULT_CSP, SecurityHeadersMiddleware
+from .theme import mount_theme
+from .urls import PageRoute, mount_xui_pages, path, reverse
 
 # Composants <ui.x> livrés avec le SDK (xui/components/*.html — voir
 # NOTICE.md dans ce dossier pour leur provenance). Enregistrés à l'import de
@@ -48,6 +50,7 @@ __all__ = [
     "UIContext",
     "UIPermissionDenied",
     "UIRedirect",
+    "resolve_user_or_anonymous",
     "mount_xui_page",
     "render_xui_template",
     "mount_plugin_static",
@@ -59,4 +62,9 @@ __all__ = [
     "DEFAULT_CSP",
     "FormResult",
     "parse_form",
+    "PageRoute",
+    "path",
+    "mount_xui_pages",
+    "reverse",
+    "mount_theme",
 ]

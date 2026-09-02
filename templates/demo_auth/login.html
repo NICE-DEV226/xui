@@ -1,0 +1,23 @@
+{% extends "layouts/page.html" %}
+{% block title %}Connexion{% endblock %}
+{% block page_title %}Connexion{% endblock %}
+{% block page_content %}
+<div class="max-w-sm">
+  {% if error %}
+  <ui.alert variant="error" class="mb-4">{{ error }}</ui.alert>
+  {% endif %}
+  <ui.form method="post" action="/plugins/demo_auth/login" class="space-y-4">
+    <input type="hidden" name="next" value="{{ next|default('/plugins/dashboard/') }}">
+    <div>
+      <ui.label for_="username">Utilisateur</ui.label>
+      <ui.input name="username" placeholder="alice ou bob"/>
+    </div>
+    <div>
+      <ui.label for_="password">Mot de passe</ui.label>
+      <ui.input type="password" name="password"/>
+    </div>
+    <ui.button type="submit" variant="primary" class="w-full">Se connecter</ui.button>
+  </ui.form>
+  <p class="mt-4 text-sm text-ink-500">Démo : <code>alice/alice123</code> (tous rôles) ou <code>bob/bob123</code> (accès restreint).</p>
+</div>
+{% endblock %}
