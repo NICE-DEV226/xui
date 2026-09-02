@@ -1,2 +1,6 @@
 __pycache__
 .bin/
+plugins/
+.xcore/
+.vscode/
+templates/
