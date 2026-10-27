@@ -110,3 +110,7 @@ validée en CSRF par le middleware et en RBAC par le même `UIContext`.
 - [`docs/architecture.md`](docs/architecture.md) — module par module du SDK.
 - [`docs/components.md`](docs/components.md) — catalogue des 50 composants.
 - [`docs/plugins.md`](docs/plugins.md) — écrire un plugin avec xui.
+
+## Auteurs & Contributeurs
+
+- NICE-DEV226
